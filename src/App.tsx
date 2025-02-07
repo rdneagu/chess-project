@@ -1,7 +1,12 @@
-import viteLogo from "/vite.svg";
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import "./App.css";
+import viteLogo from '/vite.svg';
+import reactLogo from '@/assets/react.svg';
+import { useState } from 'react';
+import './App.css';
+
+const b = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8,
+  9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+];
 
 function App() {
   const [count, setCount] = useState(0);
