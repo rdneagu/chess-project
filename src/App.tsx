@@ -11,6 +11,11 @@ const b = [
 function App() {
   const [count, setCount] = useState(0);
 
+  if (count) {
+    console.log('asd');
+    return false;
+  }
+
   return (
     <>
       <div>

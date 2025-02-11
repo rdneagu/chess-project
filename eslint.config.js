@@ -14,7 +14,7 @@ export default tseslint.config(
     settings: {
       react: { version: '19.0' },
     },
-    extends: [eslint.configs.recommended, ...tseslint.configs.strict, ...tseslint.configs.stylistic],
+    extends: [eslint.configs.recommended, ...tseslint.configs.strict, ...tseslint.configs.stylistic, prettier],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
@@ -36,10 +36,37 @@ export default tseslint.config(
       ...eslintReact.configs['jsx-runtime'].rules,
       ...eslintReactHooks.configs.recommended.rules,
       ...eslintReactA11y.configs.recommended.rules,
-      ...prettier.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      curly: 'error',
+      'no-console': 'warn',
+      'prefer-const': ['error', { destructuring: 'all' }],
+      '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      '@typescript-eslint/no-unnecessary-template-expression': 'error',
+      '@typescript-eslint/prefer-enum-initializers': 'error',
+      '@typescript-eslint/prefer-for-of': 'error',
+      '@typescript-eslint/prefer-find': 'error',
+      '@typescript-eslint/prefer-includes': 'error',
       'import/order': ['error', { groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object'] }],
+      // Airbnb partial config
+      'jsx-quotes': ['error', 'prefer-double'],
+      'react/display-name': ['off', { ignoreTranspilerName: false }],
+      'react/forbid-dom-props': ['off', { forbid: [] }],
+      'react/forbid-prop-types': [
+        'error',
+        {
+          forbid: ['any', 'array', 'object'],
+          checkContextTypes: true,
+          checkChildContextTypes: true,
+        },
+      ],
+      'react/jsx-boolean-value': ['error', 'never', { always: [] }],
+      'react/jsx-indent-props': ['error', 2],
+      'react/jsx-filename-extension': ['error', { extensions: ['.jsx', '.tsx'] }],
+      'react/jsx-closing-bracket-location': ['error', 'line-aligned'],
+      'react/jsx-closing-tag-location': 'error',
+      'react/jsx-curly-spacing': ['error', 'never', { allowMultiline: true }],
+      // Prfettier
+      ...prettier.rules,
     },
   },
-  prettier,
 );
