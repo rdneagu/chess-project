@@ -170,7 +170,7 @@ export default {
 
     // Forbid import of modules using absolute paths
     // https://github.com/import-js/eslint-plugin-import/blob/master/docs/rules/no-absolute-path.md
-    // 'import/no-absolute-path': 'error',
+    'import/no-absolute-path': 'error',
 
     // Forbid require() calls with expressions
     // https://github.com/import-js/eslint-plugin-import/blob/master/docs/rules/no-dynamic-require.md

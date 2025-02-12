@@ -8,35 +8,38 @@ import eslintReactA11y from 'eslint-plugin-jsx-a11y';
 import eslintPrettier from 'eslint-config-prettier';
 import eslintStylistic from '@stylistic/eslint-plugin';
 import eslintAirbnb from './eslint/airbnb-config.js';
+import eslintProject from './eslint/project-config.js';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config({ ignores: ['eslint', 'dist'] }, eslint.configs.recommended, {
-  extends: [...tseslint.configs.strict, ...tseslint.configs.stylistic, ...eslintAirbnb],
-  files: ['**/*.{ts,tsx}'],
-  languageOptions: {
-    ecmaVersion: 2020,
-    globals: globals.browser,
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
+export default tseslint.config(
+  { ignores: ['eslint', 'dist'] },
+  eslint.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
+  {
+    extends: [...eslintAirbnb],
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    plugins: {
+      '@stylistic': eslintStylistic,
+      import: eslintImport,
+      react: eslintReact,
+      'react-hooks': eslintReactHooks,
+      'react-refresh': eslintReactRefresh,
+      'jsx-a11y': eslintReactA11y,
+    },
+    rules: {
+      ...eslintReact.configs['jsx-runtime'].rules,
+      ...eslintReactRefresh.configs.vite.rules,
+      ...eslintProject.rules,
+      ...eslintPrettier.rules,
     },
   },
-  plugins: {
-    '@stylistic': eslintStylistic,
-    import: eslintImport,
-    react: eslintReact,
-    'react-hooks': eslintReactHooks,
-    'react-refresh': eslintReactRefresh,
-    'jsx-a11y': eslintReactA11y,
-  },
-  rules: {
-    ...eslintReact.configs['jsx-runtime'].rules,
-    ...eslintReactRefresh.configs.vite.rules,
-    curly: 'error',
-    'no-console': 'warn',
-    'prefer-const': ['error', { destructuring: 'all' }],
-    '@typescript-eslint/switch-exhaustiveness-check': 'error',
-    'import/order': ['error', { groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object'] }],
-    ...eslintPrettier.rules,
-  },
-});
+);
