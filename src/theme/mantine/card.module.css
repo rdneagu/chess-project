@@ -1,0 +1,7 @@
+@reference "../tailwind/_index.css";
+
+.root {
+  &[data-variant='main'] {
+    @apply bg-light text-dark dark:bg-dark dark:text-light flex-shrink-0 border border-zinc-300 dark:border-neutral-800;
+  }
+}

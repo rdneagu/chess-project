@@ -1,0 +1,15 @@
+@theme {
+  --spacing-inherit: inherit;
+
+  /* Height */
+  --spacing-header: 4.5rem;
+  --spacing-table-small: 30rem;
+
+  /* Width */
+  --spacing-sidebar: 16rem;
+
+  /* Margins */
+  --spacing-nbsp: 0.25rem;
+  --spacing-table-cell: 0.25rem;
+  --spacing-details-gap: 0.25rem;
+}

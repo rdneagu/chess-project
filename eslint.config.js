@@ -7,9 +7,9 @@ import eslintReactRefresh from 'eslint-plugin-react-refresh';
 import eslintReactA11y from 'eslint-plugin-jsx-a11y';
 import eslintPrettier from 'eslint-config-prettier';
 import eslintStylistic from '@stylistic/eslint-plugin';
+import tseslint from 'typescript-eslint';
 import eslintAirbnb from './eslint/airbnb-config.js';
 import eslintProject from './eslint/project-config.js';
-import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   { ignores: ['eslint', 'dist'] },

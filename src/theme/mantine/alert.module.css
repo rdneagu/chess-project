@@ -1,0 +1,9 @@
+@reference "../tailwind/_index.css";
+
+.label {
+  @apply text-sm font-medium;
+}
+
+.message {
+  @apply text-sm;
+}

@@ -1,0 +1,5 @@
+@reference "../tailwind/_index.css";
+
+.label {
+  @apply font-normal;
+}

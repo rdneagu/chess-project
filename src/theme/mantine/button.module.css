@@ -1,0 +1,5 @@
+@reference "../tailwind/_index.css";
+
+.inner {
+  @apply font-medium;
+}

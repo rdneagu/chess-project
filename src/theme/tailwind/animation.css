@@ -1,0 +1,16 @@
+/* Animations */
+@theme {
+  --animate-ripple: ripple 600ms linear forwards;
+  --animate-spinner: spin 1s linear infinite;
+
+  @keyframes ripple {
+    from {
+      opacity: 0.25;
+      transform: scale(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(4);
+    }
+  }
+}
