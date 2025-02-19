@@ -20,7 +20,7 @@ export default function AppError() {
           <Stack gap="xs" align="start">
             <Text className="text-4xl font-medium">Unexpected error occurred</Text>
             {!isProduction() && error instanceof Error && (
-              <div className="max-w-[500px] rounded border border-red-500 bg-red-500/5 px-3 py-1 text-red-500">
+              <div className="border-negative bg-negative/5 text-negative max-w-[500px] rounded border px-2 py-1">
                 {error.name}: {error.message}
               </div>
             )}

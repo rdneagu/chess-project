@@ -5,7 +5,7 @@ import { TReactWrapper } from '@/shared/types/react/TReactWrapper';
 
 type LoaderComponent = {
   pending?: boolean;
-  type: 'switch' | 'suspense' | 'overlay';
+  type: 'switch' | 'overlay' | 'suspense';
 } & Partial<TReactWrapper>;
 
 export default function Loader({ pending, type, className, children }: LoaderComponent) {
@@ -28,11 +28,11 @@ export default function Loader({ pending, type, className, children }: LoaderCom
     return children;
   }
 
-  if (type === 'suspense') {
-    return <Suspense fallback={loaderComponent}>{children}</Suspense>;
+  if (type === 'overlay' && pending) {
+    return loaderComponent;
   }
 
-  if (type === 'overlay') {
-    return loaderComponent;
+  if (type === 'suspense') {
+    return <Suspense fallback={loaderComponent}>{children}</Suspense>;
   }
 }
