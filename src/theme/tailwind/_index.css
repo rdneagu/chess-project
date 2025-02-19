@@ -1,11 +1,13 @@
-@import 'tailwindcss';
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
+
 @import './animation.css';
 @import './color.css';
-@import './shadow.css';
-@import './spacing.css';
+@import './layout.css';
+@import './effects.css';
+@import './sizing.css';
+
+@layer theme, base, components, utilities;
 
 @custom-variant dark (&:where([data-mantine-color-scheme="dark"], [data-mantine-color-scheme="dark"] *));
-
-@theme {
-  --z-sticky: 30;
-}

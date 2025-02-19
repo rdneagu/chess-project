@@ -27,5 +27,10 @@ export default {
     // Enforce type definitions to consistently use either interface or type
     // https://typescript-eslint.io/rules/consistent-type-definitions/
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+
+    // @override: Makes it more confusing when using TypeScript
+    // This rule aims to ensure that any non-required PropType declaration of a component has a corresponding defaultProps value
+    // https://github.com/jsx-eslint/eslint-plugin-react/blob/843d71a432baf0f01f598d7cf1eea75ad6896e4b/docs/rules/require-default-props.md
+    'react/require-default-props': 'off',
   },
 };

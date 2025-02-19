@@ -1,4 +1,3 @@
-/* Animations */
 @theme {
   --animate-ripple: ripple 600ms linear forwards;
   --animate-spinner: spin 1s linear infinite;

@@ -5,10 +5,6 @@ type TablerIconAdapterComponent = {
   size?: number;
 };
 
-export default function TablerIconAdapter({ icon: Icon, size }: TablerIconAdapterComponent) {
+export default function TablerIconAdapter({ icon: Icon, size = 18 }: TablerIconAdapterComponent) {
   return <Icon size={size} />;
 }
-
-TablerIconAdapter.defaultProps = {
-  size: 18,
-};

@@ -1,6 +1,17 @@
 @theme {
   --color-current: currentColor;
 
+  --color-dark-50: #c9c9c9;
+  --color-dark-100: #b8b8b8;
+  --color-dark-200: #828282;
+  --color-dark-300: #696969;
+  --color-dark-400: #424242;
+  --color-dark-500: #3b3b3b;
+  --color-dark-600: #2e2e2e;
+  --color-dark-700: #242424;
+  --color-dark-800: #1f1f1f;
+  --color-dark-900: #141414;
+
   --color-primary-50: #e1faff;
   --color-primary-100: #cdf0ff;
   --color-primary-200: #9fdefa;
@@ -16,6 +27,7 @@
 
   --color-light: var(--color-zinc-50);
   --color-dark: var(--color-neutral-950);
+  --color-dimmed: #828282;
 
   --color-sidebar-body: var(--color-neutral-900);
   --color-sidebar-border: var(--color-neutral-800);

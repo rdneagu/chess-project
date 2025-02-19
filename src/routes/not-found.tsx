@@ -11,11 +11,11 @@ export default function AppNotFound() {
   const { countdown } = useRedirectBack();
 
   return (
-    <div className="min-h-inherit flex items-center justify-center">
+    <div className="flex min-h-[inherit] items-center justify-center">
       <div className="grid grid-cols-1 grid-rows-2 items-center gap-8 px-8 xl:grid-cols-2 xl:grid-rows-1 xl:gap-16 xl:px-16">
         <Stack gap="xl" className="order-2" align="start">
-          <Text className="text-4xl font-medium">Nothing to find here</Text>
-          <Stack c="dimmed" gap={0}>
+          <Text className="text-4xl font-medium">Nothing to find</Text>
+          <Stack className="text-dimmed" gap={0}>
             <Text>Looks like you&apos;ve navigated to a place that doesn&apos;t exist or has been moved.</Text>
             <Group gap="nbsp">
               <span>You will be redirected back in {countdown} seconds.</span>
