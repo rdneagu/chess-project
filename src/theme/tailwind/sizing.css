@@ -1,4 +1,6 @@
 @theme {
+  --breakpoint-xs: 576px;
+
   /* Height */
   --spacing-header: 4.5rem;
   --spacing-table-small: 30rem;
