@@ -20,19 +20,22 @@ export default function Loader({ pending, type, className, children }: LoaderCom
     [className, type],
   );
 
-  if (type === 'switch') {
-    if (pending) {
-      return loaderComponent;
-    }
-
-    return children;
+  switch (type) {
+    case 'switch':
+      if (pending) {
+        return loaderComponent;
+      }
+      break;
+    case 'overlay':
+      if (pending) {
+        return loaderComponent;
+      }
+      break;
+    case 'suspense':
+      return <Suspense fallback={loaderComponent}>{children}</Suspense>;
+    default:
+      throw new Error(`[Loader] Type '${type}' is not valid`);
   }
 
-  if (type === 'overlay' && pending) {
-    return loaderComponent;
-  }
-
-  if (type === 'suspense') {
-    return <Suspense fallback={loaderComponent}>{children}</Suspense>;
-  }
+  return children;
 }
