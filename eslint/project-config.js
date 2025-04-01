@@ -32,5 +32,8 @@ export default {
     // This rule aims to ensure that any non-required PropType declaration of a component has a corresponding defaultProps value
     // https://github.com/jsx-eslint/eslint-plugin-react/blob/843d71a432baf0f01f598d7cf1eea75ad6896e4b/docs/rules/require-default-props.md
     'react/require-default-props': 'off',
+
+    'jsx-a11y/no-static-element-interactions': 'off',
+    'jsx-a11y/no-noninteractive-element-interactions': 'off',
   },
 };
