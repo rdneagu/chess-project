@@ -15,7 +15,10 @@ const pieceColorMap = {
   [BLACK]: 'black',
 };
 
-export function getChessPieceClass(piece: TChessPiece) {
+export function getChessPieceClass(piece?: TChessPiece) {
+  if (!piece) {
+    return '';
+  }
   return `${pieceColorMap[piece.color]} ${pieceSymbolMap[piece.type]}`;
 }
 

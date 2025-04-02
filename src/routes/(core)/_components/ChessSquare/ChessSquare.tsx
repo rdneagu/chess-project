@@ -1,53 +1,45 @@
 import { clsx } from 'clsx';
 import { useMemo } from 'react';
-import { Square, Move } from 'chess.js';
+import { Square } from 'chess.js';
 import { TChessSquarePosition } from './types/TChessSquarePosition';
-import { TChessPiece } from '@/shared/types/chess/TChessPiece';
+import { EChessSquareType } from './types/EChessSquareType';
 import { TReactWrapper } from '@/shared/types/react/TReactWrapper';
-import { getChessPieceClass, getChessSquarePosition } from '@/shared/util/ChessUtil';
+import { getChessSquarePosition } from '@/shared/util/ChessUtil';
 
 type ChessSquareComponentProps = {
   square: Square;
-  move?: Move;
-  piece?: TChessPiece;
-  isSelected?: boolean;
-  onPieceClick?: (piece: TChessPiece) => void;
+  type?: EChessSquareType;
+  onSquareClick?: (square: Square) => void;
 } & Partial<TReactWrapper>;
 
-export default function ChessSquare({ square, piece, move, isSelected, onPieceClick }: ChessSquareComponentProps) {
+export default function ChessSquare({ square, type, onSquareClick, className }: ChessSquareComponentProps) {
   const squarePosition: TChessSquarePosition = useMemo(() => getChessSquarePosition(square), [square]);
 
-  const moveClass = useMemo(() => {
-    if (!move) {
-      return '';
+  const typeClass = useMemo(() => {
+    switch (type) {
+      case EChessSquareType.SELECTED:
+        return 'bg-square-selected';
+      case EChessSquareType.CHECKED:
+        return 'bg-square-checked';
+      case EChessSquareType.MOVE_FROM:
+        return 'bg-square-move-from';
+      case EChessSquareType.MOVE_TO:
+        return 'bg-square-move-to';
+      case EChessSquareType.CAPTURABLE:
+        return 'bg-square-capturable';
+      case EChessSquareType.PATH:
+        return 'bg-square-move-path';
+      case undefined:
+      default:
+        return '';
     }
-
-    if (move.captured) {
-      return 'bg-square-capture';
-    }
-
-    return 'bg-square-move';
-  }, [move]);
-
-  const pieceClass = useMemo(() => {
-    if (!piece) {
-      return '';
-    }
-
-    return getChessPieceClass(piece);
-  }, [piece]);
-
-  const onSquareClick = () => {
-    if (piece) {
-      onPieceClick?.(piece);
-    }
-  };
+  }, [type]);
 
   return (
     <div
       style={squarePosition}
-      className={clsx('piece absolute h-[12.5%] w-[12.5%] cursor-pointer', moveClass, pieceClass, { 'bg-square-selected': isSelected })}
-      onMouseDown={() => onSquareClick()}
+      className={clsx('absolute h-[12.5%] w-[12.5%]', typeClass, className, { 'cursor-pointer': onSquareClick })}
+      onMouseDown={() => onSquareClick?.(square)}
     />
   );
 }

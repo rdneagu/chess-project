@@ -29,7 +29,6 @@
   --color-positive: var(--color-emerald-400);
   --color-retry: var(--color-yellow-200);
   --color-disabled: var(--color-zinc-400);
-  --color-selected: var(--color-sky-400);
 
   --color-light: var(--color-zinc-50);
   --color-dark: var(--color-neutral-950);
@@ -56,15 +55,27 @@
 }
 
 @utility bg-square-selected {
-  @apply bg-selected opacity-50;
+  @apply border border-indigo-600 bg-indigo-500;
 }
 
-@utility bg-square-capture {
-  @apply opacity-60;
-  background: radial-gradient(transparent 0%, transparent 80%, var(--color-selected) 80%);
+@utility bg-square-checked {
+  @apply border border-red-400 bg-red-300;
 }
 
-@utility bg-square-move {
-  @apply opacity-60;
-  background: radial-gradient(var(--color-selected) 0%, var(--color-selected) 20%, transparent 20%);
+@utility bg-square-move-from {
+  @apply bg-violet-300;
+}
+
+@utility bg-square-move-to {
+  @apply bg-violet-300 ring ring-violet-500;
+}
+
+@utility bg-square-capturable {
+  @apply opacity-80;
+  background: radial-gradient(transparent 0%, transparent 80%, var(--color-indigo-500) 80%);
+}
+
+@utility bg-square-move-path {
+  @apply opacity-80;
+  background: radial-gradient(var(--color-indigo-500) 0%, var(--color-indigo-500) 20%, transparent 20%);
 }
