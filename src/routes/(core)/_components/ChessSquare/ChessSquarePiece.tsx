@@ -17,7 +17,6 @@ export default function ChessSquarePiece({ square, piece, turn, onPieceClick }: 
   const pieceClass = useMemo(() => getChessPieceClass(piece), [piece]);
 
   const onSquareClick = useCallback(() => {
-    console.log(turn, piece.color);
     if (turn === piece.color) {
       onPieceClick?.(piece);
     }

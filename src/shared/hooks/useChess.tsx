@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TChessBoard } from '../types/chess/TChessBoard';
 import { TChessPiece } from '../types/chess/TChessPiece';
 import { clampNumberBetweenWrap } from '../util/NumberUtil';
+import { parsePGN } from '../util/ChessUtil';
 
 type TChessLoadConfig = {
   pgn?: string;
@@ -23,7 +24,8 @@ export default function useChess() {
   const loadGame = useCallback(
     (config: TChessLoadConfig) => {
       if (config.pgn) {
-        chess.loadPgn(config.pgn);
+        // chess.loadPgn(config.pgn);
+        parsePGN(config.pgn);
       } else if (config.fen) {
         chess.load(config.fen);
       } else {
@@ -37,6 +39,10 @@ export default function useChess() {
     },
     [chess],
   );
+
+  useEffect(() => {
+    // console.log(moves);
+  }, [moves]);
 
   const movePiece = useCallback(
     (move: Move) => {
@@ -58,6 +64,11 @@ export default function useChess() {
     },
     [chess, selectedPiece],
   );
+
+  const deselectPiece = useCallback(() => {
+    setSelectedPiece(null);
+    setPossibleMoves([]);
+  }, []);
 
   const loadMoveById = useCallback(
     (moveId: number) => {
@@ -104,9 +115,8 @@ export default function useChess() {
   }, [isCheck, currentTurn, pieces]);
 
   useEffect(() => {
-    setSelectedPiece(null);
-    setPossibleMoves([]);
-  }, [currentMove]);
+    deselectPiece();
+  }, [currentMove, deselectPiece]);
 
   return {
     board,

@@ -35,5 +35,10 @@ export default {
 
     'jsx-a11y/no-static-element-interactions': 'off',
     'jsx-a11y/no-noninteractive-element-interactions': 'off',
+    'no-plusplus': 'off',
+    'no-cond-assign': ['error', 'except-parens'],
+    'no-param-reassign': 'off',
+    'no-continue': 'off',
+    '@typescript-eslint/no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
   },
 };
