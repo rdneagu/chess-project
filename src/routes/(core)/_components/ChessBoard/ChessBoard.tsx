@@ -15,7 +15,7 @@ export default function ChessBoard() {
   const {
     pieces,
     possibleMoves,
-    currentMove,
+    selectedMove,
     currentTurn,
     checkedSquare,
     selectedPiece,
@@ -39,19 +39,19 @@ export default function ChessBoard() {
       <div className="bg-board-purple shadow-light/15 shadow-elevation-8 relative h-128 w-128 rounded">
         <ChessBoardRanks />
         <ChessBoardFiles />
-        {currentMove && (
+        {selectedMove && (
           <>
-            <ChessSquareMove square={currentMove.from} move={currentMove} moveType={EChessSquareType.MOVE_FROM} />
-            <ChessSquareMove square={currentMove.to} move={currentMove} moveType={EChessSquareType.MOVE_TO} />
+            <ChessSquareMove square={selectedMove.from} isCapturing={selectedMove.isCapture} moveType={EChessSquareType.MOVE_FROM} />
+            <ChessSquareMove square={selectedMove.to} isCapturing={selectedMove.isCapture} moveType={EChessSquareType.MOVE_TO} />
           </>
         )}
         {selectedPiece && <ChessSquare square={selectedPiece?.square} type={EChessSquareType.SELECTED} />}
         {checkedSquare && <ChessSquare square={checkedSquare} type={EChessSquareType.CHECKED} />}
         {pieces.map((piece) => (
-          <ChessSquarePiece key={piece.square} square={piece.square} piece={piece} turn={currentTurn} onPieceClick={selectPiece} />
+          <ChessSquarePiece key={piece.square} square={piece.square} piece={piece} turn={currentTurn} onPieceClick={() => selectPiece(piece)} />
         ))}
         {possibleMoves.map((move) => (
-          <ChessSquareMove key={move.to} square={move.to} move={move} onMoveClick={() => movePiece(move)} />
+          <ChessSquareMove key={move.to} square={move.to} isCapturing={move.isCapture()} onMoveClick={() => movePiece(move)} />
         ))}
       </div>
       <div className="flex justify-end gap-x-2">

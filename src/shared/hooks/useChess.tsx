@@ -2,45 +2,111 @@ import { Chess, KING, Move } from 'chess.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TChessBoard } from '../types/chess/TChessBoard';
 import { TChessPiece } from '../types/chess/TChessPiece';
-import { clampNumberWithWrap } from '../util/NumberUtil';
 import { TChessPgn } from '../types/chess/TChessPgn';
-import { TChessMove } from '../types/chess/TChessMove';
-import { generateHistory, generateMove } from '../util/ChessUtil';
+import { TChessPgnMove } from '../types/chess/TChessPgnMove';
+import { CLinkedMoveList, TChessMove } from '../types/chess/TChessMove';
 
 export default function useChess() {
   const [chess] = useState<Chess>(new Chess());
   const [board, setBoard] = useState<TChessBoard>([]);
-  const [moves, setMoves] = useState<TChessMove[]>([]);
-  const [history, setHistory] = useState<TChessMove[]>([]);
+  const [moveList, setMoveList] = useState<CLinkedMoveList>(new CLinkedMoveList());
   const [possibleMoves, setPossibleMoves] = useState<Move[]>([]);
-  const [currentMoveId, setCurrentMoveId] = useState<number>(0);
   const [selectedPiece, setSelectedPiece] = useState<TChessPiece | null>(null);
+  const [selectedMove, setSelectedMove] = useState<TChessMove | null>(null);
 
   const pieces = useMemo(() => board.flat().filter((piece) => piece !== null), [board]);
+
+  const generateMove = useCallback((chessInstance: Chess, san: string): TChessMove => {
+    chessInstance.move(san);
+    const [chessMove] = chessInstance.history({ verbose: true }).slice(-1);
+    const [ply = 0] = chessMove.before.match(/\d+$/) ?? [];
+    const lastMove: TChessMove = {
+      ply: +ply,
+      san: chessMove.san,
+      beforeFen: chessMove.before,
+      afterFen: chessMove.after,
+      color: chessMove.color,
+      from: chessMove.from,
+      to: chessMove.to,
+      piece: chessMove.piece,
+      captured: chessMove.captured,
+      promotion: chessMove.promotion,
+      isCapture: chessMove.isCapture(),
+      isPromotion: chessMove.isPromotion(),
+      isEnPassant: chessMove.isEnPassant(),
+      isKingsideCastle: chessMove.isKingsideCastle(),
+      isQueensideCastle: chessMove.isQueensideCastle(),
+      isBigPawn: chessMove.isBigPawn(),
+    };
+    return lastMove;
+  }, []);
+
+  const generateHistory = useCallback(
+    (chessInstance: Chess, pgnMoves: TChessPgnMove[]): CLinkedMoveList => {
+      const generatedMoves = new CLinkedMoveList();
+      pgnMoves.forEach((move) => {
+        const lastMove = generateMove(chessInstance, move.san);
+        if (move.rav) {
+          lastMove.rav = move.rav.map((rav) => generateHistory(new Chess(lastMove.beforeFen), rav));
+        }
+        generatedMoves.addMove(lastMove);
+      });
+      return generatedMoves;
+    },
+    [generateMove],
+  );
+
+  const selectMove = useCallback(
+    (move?: TChessMove) => {
+      if (move) {
+        chess.load(move.afterFen);
+        setBoard(chess.board());
+        setSelectedMove(move);
+      }
+    },
+    [chess],
+  );
 
   const loadGame = useCallback(
     (pgnConfig: TChessPgn) => {
       chess.reset();
 
       const generatedHistory = generateHistory(chess, pgnConfig.moves);
-      console.log(generatedHistory);
       setBoard(chess.board());
-      setHistory(generatedHistory);
-      setMoves(generatedHistory);
-      setCurrentMoveId(generatedHistory.length - 1);
+      setMoveList(generatedHistory);
+      selectMove(generatedHistory.lastMove);
+      console.log(generatedHistory);
     },
-    [chess],
+    [chess, generateHistory, selectMove],
   );
 
   const movePiece = useCallback(
     (move: Move) => {
       const newMove = generateMove(chess, move.san);
       setBoard(chess.board());
-      setMoves((prevMoves) => [...prevMoves, newMove]);
-      setCurrentMoveId((prevMoveId) => prevMoveId + 1);
+      setMoveList((prevMoves) => prevMoves.addMove(newMove));
+      selectMove(newMove);
     },
-    [chess],
+    [chess, selectMove, generateMove],
   );
+
+  const showPreviousMove = useCallback(() => {
+    const move = selectedMove?.previousMove ?? moveList.lastMove;
+    selectMove(move);
+  }, [selectedMove, moveList, selectMove]);
+
+  const showNextMove = useCallback(() => {
+    const move = selectedMove?.nextMove ?? moveList.firstMove;
+    selectMove(move);
+  }, [selectedMove, moveList, selectMove]);
+
+  const showFirstMove = useCallback(() => {
+    selectMove(moveList.firstMove);
+  }, [moveList, selectMove]);
+
+  const showLastMove = useCallback(() => {
+    selectMove(moveList.lastMove);
+  }, [moveList, selectMove]);
 
   const selectPiece = useCallback(
     (piece: TChessPiece) => {
@@ -58,37 +124,8 @@ export default function useChess() {
     setPossibleMoves([]);
   }, []);
 
-  const loadMoveById = useCallback(
-    (moveId: number) => {
-      const { afterFen } = history[moveId] ?? {};
-      if (afterFen) {
-        chess.load(afterFen);
-        setBoard(chess.board());
-      }
-      setCurrentMoveId(moveId);
-    },
-    [chess, history],
-  );
-
-  const showPreviousMove = useCallback(() => {
-    loadMoveById(clampNumberWithWrap(currentMoveId - 1, 0, history.length - 1));
-  }, [currentMoveId, loadMoveById, history]);
-
-  const showNextMove = useCallback(() => {
-    loadMoveById(clampNumberWithWrap(currentMoveId + 1, 0, history.length - 1));
-  }, [currentMoveId, loadMoveById, history]);
-
-  const showFirstMove = useCallback(() => {
-    loadMoveById(0);
-  }, [loadMoveById]);
-
-  const showLastMove = useCallback(() => {
-    loadMoveById(history.length - 1);
-  }, [loadMoveById, history]);
-
-  const currentMove = useMemo(() => history[currentMoveId] ?? null, [history, currentMoveId]);
-  const currentTurn = useMemo(() => chess.turn(), [chess, currentMove]); // eslint-disable-line react-hooks/exhaustive-deps
-  const isCheck = useMemo(() => chess.inCheck(), [chess, currentMove]); // eslint-disable-line react-hooks/exhaustive-deps
+  const currentTurn = useMemo(() => chess.turn(), [chess, selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
+  const isCheck = useMemo(() => chess.inCheck(), [chess, selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkedSquare = useMemo(() => {
     if (!isCheck) {
@@ -100,20 +137,21 @@ export default function useChess() {
 
   useEffect(() => {
     deselectPiece();
-  }, [currentMove, deselectPiece]);
+  }, [selectedMove, deselectPiece]);
 
   return {
     board,
     pieces,
-    moves: history,
+    moveList,
     possibleMoves,
     selectedPiece,
-    currentMove,
+    selectedMove,
     currentTurn,
     checkedSquare,
     loadGame,
     movePiece,
     selectPiece,
+    selectMove,
     showFirstMove,
     showPreviousMove,
     showNextMove,

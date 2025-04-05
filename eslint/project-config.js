@@ -41,5 +41,8 @@ export default {
     'no-continue': 'off',
     '@typescript-eslint/no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
     '@typescript-eslint/switch-exhaustiveness-check': 'off',
+    '@stylistic/lines-between-class-members': 'off',
+    'no-underscore-dangle': 'off',
+    'jsx-a11y/click-events-have-key-events': 'off',
   },
 };

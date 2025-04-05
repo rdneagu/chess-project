@@ -1,6 +1,6 @@
 import { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK, Square, Chess } from 'chess.js';
 import { TChessPiece } from '../types/chess/TChessPiece';
-import { TChessMove } from '../types/chess/TChessMove';
+import { TChessMove, CLinkedMoveList } from '../types/chess/TChessMove';
 import { TChessPgnMove } from '../types/chess/TChessPgnMove';
 
 const pieceSymbolMap = {
@@ -16,6 +16,8 @@ const pieceColorMap = {
   [WHITE]: 'white',
   [BLACK]: 'black',
 };
+
+let uniqueMoveId = 0;
 
 export function getChessPieceClass(piece?: TChessPiece) {
   if (!piece) {
@@ -54,14 +56,16 @@ export function getChessSquarePosition(square?: Square) {
  * @param startAtFen - The fen to start at, required for variants to load the previous move
  * @returns The generated moves
  */
-export function generateHistory(chess: Chess, pgnMoves: TChessPgnMove[]): TChessMove[] {
-  const generatedMoves: TChessMove[] = [];
+export function generateHistory(chess: Chess, pgnMoves: TChessPgnMove[]): CLinkedMoveList {
+  const generatedMoves = new CLinkedMoveList();
+  uniqueMoveId = 0;
+
   pgnMoves.forEach((move) => {
     const lastMove = generateMove(chess, move.san);
     if (move.rav) {
-      lastMove.rav = move.rav.map((variant) => generateHistory(new Chess(generatedMoves[generatedMoves.length - 1].afterFen), variant));
+      lastMove.rav = move.rav.map((variant) => generateHistory(new Chess(lastMove.beforeFen), variant));
     }
-    generatedMoves.push(lastMove);
+    generatedMoves.addMove(lastMove);
   });
   return generatedMoves;
 }
@@ -71,6 +75,7 @@ export function generateMove(chess: Chess, san: string): TChessMove {
   const [chessMove] = chess.history({ verbose: true }).slice(-1);
   const [ply = 0] = chessMove.before.match(/\d+$/) ?? [];
   const lastMove: TChessMove = {
+    moveId: uniqueMoveId++,
     ply: +ply,
     san: chessMove.san,
     beforeFen: chessMove.before,

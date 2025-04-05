@@ -10,7 +10,7 @@ type ChessSquarePieceProps = {
   square: Square;
   piece: TChessPiece;
   turn: Color;
-  onPieceClick?: (piece: TChessPiece) => void;
+  onPieceClick?: () => void;
 } & Partial<TReactWrapper>;
 
 export default function ChessSquarePiece({ square, piece, turn, onPieceClick }: ChessSquarePieceProps) {
@@ -18,7 +18,7 @@ export default function ChessSquarePiece({ square, piece, turn, onPieceClick }: 
 
   const onSquareClick = useCallback(() => {
     if (turn === piece.color) {
-      onPieceClick?.(piece);
+      onPieceClick?.();
     }
   }, [onPieceClick, piece, turn]);
 
