@@ -1,5 +1,7 @@
-import { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK, Square } from 'chess.js';
+import { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK, Square, Chess } from 'chess.js';
 import { TChessPiece } from '../types/chess/TChessPiece';
+import { TChessMove } from '../types/chess/TChessMove';
+import { TChessPgnMove } from '../types/chess/TChessPgnMove';
 
 const pieceSymbolMap = {
   [PAWN]: 'pawn',
@@ -15,8 +17,6 @@ const pieceColorMap = {
   [BLACK]: 'black',
 };
 
-type MoveString = string | MoveString[];
-
 export function getChessPieceClass(piece?: TChessPiece) {
   if (!piece) {
     return '';
@@ -25,8 +25,8 @@ export function getChessPieceClass(piece?: TChessPiece) {
 }
 
 export function getRankPosition(rank: string) {
-  const startCode = '1'.charCodeAt(0);
-  const rankPosition = rank.charCodeAt(0) - startCode;
+  const startCode = '8'.charCodeAt(0);
+  const rankPosition = startCode - rank.charCodeAt(0);
   return `${rankPosition * 12.5}%`;
 }
 
@@ -47,58 +47,46 @@ export function getChessSquarePosition(square?: Square) {
   };
 }
 
-export function parsePGN(pgn: string): MoveString[] {
-  const cleanedPgn = pgn
-    .replace(/\[.*\]\n\n?/g, '') // Remove headers
-    .replace(/[ ]{2,}/g, '') // Remove extra spaces
-    .replace(/\d+\.+ /g, '') // Remove move numbers
-    .replace(/\n/g, ' '); // Replace newlines with spaces
-
-  const result: MoveString[] = [];
-  let currentMove = '';
-  let depth = 0;
-  let isComment = false;
-
-  // eslint-disable-next-line @typescript-eslint/prefer-for-of
-  for (let i = 0; i < cleanedPgn.length; i++) {
-    const char = cleanedPgn[i];
-
-    if (char === '{') {
-      isComment = true;
-    } else if (char === '}') {
-      isComment = false;
-    } else if (!isComment) {
-      if (char === '(') {
-        if (depth === 0 && currentMove.trim()) {
-          result.push(currentMove.trim());
-          currentMove = '';
-        }
-        depth += 1;
-        currentMove += char;
-      } else if (char === ')') {
-        depth -= 1;
-        currentMove += char;
-        if (depth === 0) {
-          const variant = currentMove.slice(1, -1);
-          result.push(parsePGN(variant));
-          currentMove = '';
-        }
-      } else if (char === ' ' && depth === 0) {
-        if (currentMove.trim()) {
-          result.push(currentMove.trim());
-          currentMove = '';
-        }
-      } else {
-        currentMove += char;
-      }
+/**
+ * Generate moves from pgn moves
+ * @param chess - The chess instance
+ * @param pgnMoves - The pgn moves
+ * @param startAtFen - The fen to start at, required for variants to load the previous move
+ * @returns The generated moves
+ */
+export function generateHistory(chess: Chess, pgnMoves: TChessPgnMove[]): TChessMove[] {
+  const generatedMoves: TChessMove[] = [];
+  pgnMoves.forEach((move) => {
+    const lastMove = generateMove(chess, move.san);
+    if (move.rav) {
+      lastMove.rav = move.rav.map((variant) => generateHistory(new Chess(generatedMoves[generatedMoves.length - 1].afterFen), variant));
     }
-  }
+    generatedMoves.push(lastMove);
+  });
+  return generatedMoves;
+}
 
-  if (currentMove.trim()) {
-    result.push(currentMove.trim());
-  }
-
-  console.log(result);
-
-  return result;
+export function generateMove(chess: Chess, san: string): TChessMove {
+  chess.move(san);
+  const [chessMove] = chess.history({ verbose: true }).slice(-1);
+  const [ply = 0] = chessMove.before.match(/\d+$/) ?? [];
+  const lastMove: TChessMove = {
+    ply: +ply,
+    san: chessMove.san,
+    beforeFen: chessMove.before,
+    afterFen: chessMove.after,
+    color: chessMove.color,
+    from: chessMove.from,
+    to: chessMove.to,
+    piece: chessMove.piece,
+    captured: chessMove.captured,
+    promotion: chessMove.promotion,
+    isCapture: chessMove.isCapture(),
+    isPromotion: chessMove.isPromotion(),
+    isEnPassant: chessMove.isEnPassant(),
+    isKingsideCastle: chessMove.isKingsideCastle(),
+    isQueensideCastle: chessMove.isQueensideCastle(),
+    isBigPawn: chessMove.isBigPawn(),
+  };
+  return lastMove;
 }

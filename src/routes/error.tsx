@@ -9,7 +9,7 @@ import { isProduction } from '@/shared/util/EnvironmentUtil';
 
 export default function AppError() {
   const { navigateBack, navigateHome } = useNavigate();
-  const { countdown } = useRedirectBack();
+  const { countdown } = useRedirectBack({ disabled: true });
 
   const error = useRouteError();
 

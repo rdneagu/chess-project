@@ -1,20 +1,17 @@
-import { useEffect } from 'react';
+import { useContext } from 'react';
 import { useHotkeys } from '@mantine/hooks';
 import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
 import ChessSquare from '../ChessSquare/ChessSquare';
 import { EChessSquareType } from '../ChessSquare/types/EChessSquareType';
 import ChessSquarePiece from '../ChessSquare/ChessSquarePiece';
 import ChessSquareMove from '../ChessSquare/ChessSquareMove';
-import { TReactWrapper } from '@/shared/types/react/TReactWrapper';
-import useChess from '@/shared/hooks/useChess';
+import ChessBoardRanks from './_components/ChessBoardRanks/ChessBoardRanks';
+import ChessBoardFiles from './_components/ChessBoardFiles/ChessBoardFiles';
 import IconButtonAdapter from '@/shared/components/ButtonAdapter/IconButtonAdapter';
 import TablerIconAdapter from '@/shared/components/TablerIconAdapter/TablerIconAdapter';
+import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
 
-type ChessBoardComponentProps = {
-  pgn: string;
-} & Partial<TReactWrapper>;
-
-export default function ChessBoard({ pgn }: ChessBoardComponentProps) {
+export default function ChessBoard() {
   const {
     pieces,
     possibleMoves,
@@ -22,14 +19,13 @@ export default function ChessBoard({ pgn }: ChessBoardComponentProps) {
     currentTurn,
     checkedSquare,
     selectedPiece,
-    loadGame,
     selectPiece,
     movePiece,
     showNextMove,
     showPreviousMove,
     showFirstMove,
     showLastMove,
-  } = useChess();
+  } = useContext(ChessContext);
 
   useHotkeys([
     ['ArrowUp', () => showFirstMove()],
@@ -38,13 +34,11 @@ export default function ChessBoard({ pgn }: ChessBoardComponentProps) {
     ['ArrowDown', () => showLastMove()],
   ]);
 
-  useEffect(() => {
-    loadGame({ pgn });
-  }, [pgn, loadGame]);
-
   return (
     <div className="m-auto flex flex-col gap-y-2">
       <div className="bg-board-purple shadow-light/15 shadow-elevation-8 relative h-128 w-128 rounded">
+        <ChessBoardRanks />
+        <ChessBoardFiles />
         {currentMove && (
           <>
             <ChessSquareMove square={currentMove.from} move={currentMove} moveType={EChessSquareType.MOVE_FROM} />

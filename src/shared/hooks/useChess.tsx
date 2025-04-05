@@ -2,19 +2,16 @@ import { Chess, KING, Move } from 'chess.js';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TChessBoard } from '../types/chess/TChessBoard';
 import { TChessPiece } from '../types/chess/TChessPiece';
-import { clampNumberBetweenWrap } from '../util/NumberUtil';
-import { parsePGN } from '../util/ChessUtil';
-
-type TChessLoadConfig = {
-  pgn?: string;
-  fen?: string;
-};
+import { clampNumberWithWrap } from '../util/NumberUtil';
+import { TChessPgn } from '../types/chess/TChessPgn';
+import { TChessMove } from '../types/chess/TChessMove';
+import { generateHistory, generateMove } from '../util/ChessUtil';
 
 export default function useChess() {
-  const [pgn, setPgn] = useState<string>('');
   const [chess] = useState<Chess>(new Chess());
   const [board, setBoard] = useState<TChessBoard>([]);
-  const [moves, setMoves] = useState<Move[]>([]);
+  const [moves, setMoves] = useState<TChessMove[]>([]);
+  const [history, setHistory] = useState<TChessMove[]>([]);
   const [possibleMoves, setPossibleMoves] = useState<Move[]>([]);
   const [currentMoveId, setCurrentMoveId] = useState<number>(0);
   const [selectedPiece, setSelectedPiece] = useState<TChessPiece | null>(null);
@@ -22,34 +19,25 @@ export default function useChess() {
   const pieces = useMemo(() => board.flat().filter((piece) => piece !== null), [board]);
 
   const loadGame = useCallback(
-    (config: TChessLoadConfig) => {
-      if (config.pgn) {
-        // chess.loadPgn(config.pgn);
-        parsePGN(config.pgn);
-      } else if (config.fen) {
-        chess.load(config.fen);
-      } else {
-        throw new Error('[useChess][chessLoad] No config provided');
-      }
+    (pgnConfig: TChessPgn) => {
+      chess.reset();
 
-      setPgn(chess.pgn());
+      const generatedHistory = generateHistory(chess, pgnConfig.moves);
+      console.log(generatedHistory);
       setBoard(chess.board());
-      setMoves(chess.history({ verbose: true }));
-      setCurrentMoveId(chess.history().length - 1);
+      setHistory(generatedHistory);
+      setMoves(generatedHistory);
+      setCurrentMoveId(generatedHistory.length - 1);
     },
     [chess],
   );
 
-  useEffect(() => {
-    // console.log(moves);
-  }, [moves]);
-
   const movePiece = useCallback(
     (move: Move) => {
-      chess.move(move);
+      const newMove = generateMove(chess, move.san);
       setBoard(chess.board());
-      setMoves(chess.history({ verbose: true }));
-      setCurrentMoveId(chess.history().length - 1);
+      setMoves((prevMoves) => [...prevMoves, newMove]);
+      setCurrentMoveId((prevMoveId) => prevMoveId + 1);
     },
     [chess],
   );
@@ -72,37 +60,33 @@ export default function useChess() {
 
   const loadMoveById = useCallback(
     (moveId: number) => {
-      const { after } = moves[moveId] ?? {};
-      if (after) {
-        if (moveId === moves.length - 1) {
-          chess.loadPgn(pgn);
-        } else {
-          chess.load(after);
-        }
+      const { afterFen } = history[moveId] ?? {};
+      if (afterFen) {
+        chess.load(afterFen);
         setBoard(chess.board());
       }
       setCurrentMoveId(moveId);
     },
-    [chess, moves, pgn],
+    [chess, history],
   );
 
   const showPreviousMove = useCallback(() => {
-    loadMoveById(clampNumberBetweenWrap(currentMoveId - 1, 0, moves.length - 1));
-  }, [currentMoveId, loadMoveById, moves]);
+    loadMoveById(clampNumberWithWrap(currentMoveId - 1, 0, history.length - 1));
+  }, [currentMoveId, loadMoveById, history]);
 
   const showNextMove = useCallback(() => {
-    loadMoveById(clampNumberBetweenWrap(currentMoveId + 1, 0, moves.length - 1));
-  }, [currentMoveId, loadMoveById, moves]);
+    loadMoveById(clampNumberWithWrap(currentMoveId + 1, 0, history.length - 1));
+  }, [currentMoveId, loadMoveById, history]);
 
   const showFirstMove = useCallback(() => {
     loadMoveById(0);
   }, [loadMoveById]);
 
   const showLastMove = useCallback(() => {
-    loadMoveById(moves.length - 1);
-  }, [loadMoveById, moves]);
+    loadMoveById(history.length - 1);
+  }, [loadMoveById, history]);
 
-  const currentMove = useMemo(() => moves[currentMoveId] ?? null, [moves, currentMoveId]);
+  const currentMove = useMemo(() => history[currentMoveId] ?? null, [history, currentMoveId]);
   const currentTurn = useMemo(() => chess.turn(), [chess, currentMove]); // eslint-disable-line react-hooks/exhaustive-deps
   const isCheck = useMemo(() => chess.inCheck(), [chess, currentMove]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -121,7 +105,7 @@ export default function useChess() {
   return {
     board,
     pieces,
-    moves,
+    moves: history,
     possibleMoves,
     selectedPiece,
     currentMove,
