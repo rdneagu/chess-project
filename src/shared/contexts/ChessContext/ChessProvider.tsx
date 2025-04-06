@@ -6,10 +6,10 @@ import { parsePgn } from '@/shared/util/PgnUtil';
 
 type ChessProviderProps = {
   pgn: string;
+  chess: ReturnType<typeof useChess>;
 } & TReactWrapper;
 
-export default function ChessProvider({ pgn, children }: ChessProviderProps) {
-  const chess = useChess();
+export default function ChessProvider({ pgn, chess, children }: ChessProviderProps) {
   const { loadGame } = chess;
 
   useEffect(() => {

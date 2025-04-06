@@ -57,7 +57,7 @@ export default function useChess() {
   );
 
   const selectMove = useCallback(
-    (move?: TChessMove) => {
+    (move?: TChessMove | null) => {
       if (move) {
         chess.load(move.afterFen);
         setBoard(chess.board());
@@ -91,14 +91,14 @@ export default function useChess() {
   );
 
   const showPreviousMove = useCallback(() => {
-    const move = selectedMove?.previousMove ?? moveList.lastMove;
+    const move = selectedMove?.previousMove;
     selectMove(move);
-  }, [selectedMove, moveList, selectMove]);
+  }, [selectedMove, selectMove]);
 
   const showNextMove = useCallback(() => {
-    const move = selectedMove?.nextMove ?? moveList.firstMove;
+    const move = selectedMove?.nextMove;
     selectMove(move);
-  }, [selectedMove, moveList, selectMove]);
+  }, [selectedMove, selectMove]);
 
   const showFirstMove = useCallback(() => {
     selectMove(moveList.firstMove);

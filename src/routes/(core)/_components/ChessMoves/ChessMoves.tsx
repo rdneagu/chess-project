@@ -1,49 +1,110 @@
 import { useCallback, useContext, useMemo } from 'react';
 import clsx from 'clsx';
-import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
+import { Group, Stack } from '@mantine/core';
 import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
 import { TChessMove } from '@/shared/types/chess/TChessMove';
-import TablerIconAdapter from '@/shared/components/TablerIconAdapter/TablerIconAdapter';
 
-export default function ChessMoves() {
-  const { moveList, selectedMove, selectMove } = useContext(ChessContext);
+type ChessMovesProps = {
+  moveList: TChessMove[];
+};
+
+type TGroupedMove = {
+  left?: TChessMove | null;
+  right?: TChessMove | null;
+};
+
+export default function ChessMoves({ moveList }: ChessMovesProps) {
+  const { selectedMove, selectMove } = useContext(ChessContext);
 
   const groupedMoves = useMemo(() => {
-    const moves = [];
+    const moves: Record<number, TGroupedMove> = {};
+    let curMove = 0;
     for (let i = 0; i < moveList.length; i++) {
-      const plyMoves: (TChessMove | undefined)[] = [];
-      const move = moveList.moves[i];
-
-      if (move?.rav) {
-        plyMoves.push(move, undefined);
-      } else if (move.previousMove?.rav) {
-        plyMoves.push(undefined, move);
-      } else {
-        plyMoves.push(move, move.nextMove);
-        i++;
+      if (!moves[curMove]) {
+        moves[curMove] = {};
       }
-      moves.push(plyMoves);
+
+      const move = moveList[i];
+      if (move.color === 'w') {
+        moves[curMove].left = move;
+        if (!move.nextMove) {
+          moves[curMove].right = null;
+        }
+        if (move.rav) {
+          curMove++;
+        }
+      } else if (move.color === 'b') {
+        moves[curMove].right = move;
+        curMove++;
+      }
     }
     return moves;
   }, [moveList]);
 
-  const isMoveSelected = useCallback((move?: TChessMove) => selectedMove === move, [selectedMove]);
+  const isMoveSelected = useCallback((move?: TChessMove | null) => selectedMove === move, [selectedMove]);
+  const getRavMoves = useCallback((move?: TChessMove | null) => {
+    if (move?.rav) {
+      return move.rav;
+    }
+    return [];
+  }, []);
+  const getMoveSan = useCallback((move?: TChessMove | null) => {
+    if (move === null) {
+      return '';
+    }
+
+    if (move?.san) {
+      return move.san;
+    }
+
+    return '...';
+  }, []);
 
   return (
-    <div className="flex max-h-96 w-96 flex-col overflow-y-auto border border-indigo-400 p-4">
-      {groupedMoves.map(([move1, move2], i) => (
+    <div className="flex h-full max-h-[512px] w-full flex-col overflow-x-hidden overflow-y-auto">
+      {Object.values(groupedMoves).map((groupedMove, i) => (
         // eslint-disable-next-line react/no-array-index-key
-        <div className={clsx('flex gap-x-2')} key={i}>
-          <span>{move1?.ply ?? move2?.ply}</span>
-          <div className="flex flex-1 gap-x-8">
-            <span className={clsx('flex-1 cursor-pointer', { 'bg-indigo-400': isMoveSelected(move1) })} onClick={() => selectMove(move1)}>
-              {move1?.san ?? <TablerIconAdapter icon={IconArrowUp} size={18} />}
-            </span>
-            <span className={clsx('flex-1 cursor-pointer', { 'bg-indigo-400': isMoveSelected(move2) })} onClick={() => selectMove(move2)}>
-              {move2?.san ?? <TablerIconAdapter icon={IconArrowDown} size={18} />}
-            </span>
-          </div>
-        </div>
+        <Stack key={i} gap={0} className="ml-1">
+          <Group className="rounded-sm">
+            <span className="w-4 text-right">{groupedMove.left?.ply ?? groupedMove.right?.ply}</span>
+            <div className="flex flex-1">
+              <div className="flex-1">
+                <span
+                  className={clsx('rounded px-1 py-px select-none', {
+                    'cursor-pointer hover:bg-indigo-400/20': groupedMove.left,
+                    'bg-indigo-400': isMoveSelected(groupedMove.left),
+                  })}
+                  onClick={() => selectMove(groupedMove.left)}>
+                  {getMoveSan(groupedMove.left)}
+                </span>
+              </div>
+              <div className="flex-1">
+                <span
+                  className={clsx('rounded px-1 py-px select-none', {
+                    'cursor-pointer hover:bg-indigo-400/20': groupedMove.right,
+                    'bg-indigo-400': isMoveSelected(groupedMove.right),
+                  })}
+                  onClick={() => selectMove(groupedMove.right)}>
+                  {getMoveSan(groupedMove.right)}
+                </span>
+              </div>
+            </div>
+          </Group>
+          {getRavMoves(groupedMove.left).length !== 0 && (
+            <div className="my-2 ml-2 border-l border-indigo-400 bg-indigo-400/10 py-2 pl-2">
+              {getRavMoves(groupedMove.left).map((rav) => (
+                <ChessMoves moveList={rav.moves} />
+              ))}
+            </div>
+          )}
+          {getRavMoves(groupedMove.right).length !== 0 && (
+            <div className="my-2 ml-2 border-l border-indigo-400 bg-indigo-400/10 py-2 pl-2">
+              {getRavMoves(groupedMove.right).map((rav) => (
+                <ChessMoves moveList={rav.moves} />
+              ))}
+            </div>
+          )}
+        </Stack>
       ))}
     </div>
   );

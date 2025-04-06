@@ -1,5 +1,6 @@
 import ChessBoard from '../ChessBoard/ChessBoard';
 import ChessMoves from '../ChessMoves/ChessMoves';
+import useChess from '@/shared/hooks/useChess';
 import ChessProvider from '@/shared/contexts/ChessContext/ChessProvider';
 
 const pgn1 = `
@@ -111,11 +112,15 @@ const pgn4 = `[Event "?"]
 Qe7) *`;
 
 export default function Chess() {
+  const chess = useChess();
+
   return (
-    <ChessProvider pgn={pgn2}>
+    <ChessProvider pgn={pgn3} chess={chess}>
       <div className="m-auto flex gap-x-4">
         <ChessBoard />
-        <ChessMoves />
+        <div className="w-[256px]">
+          <ChessMoves moveList={chess.moveList.moves} />
+        </div>
       </div>
     </ChessProvider>
   );
