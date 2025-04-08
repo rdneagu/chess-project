@@ -1,7 +1,7 @@
 import ChessBoard from '../ChessBoard/ChessBoard';
 import ChessMoves from '../ChessMoves/ChessMoves';
-import useChess from '@/shared/hooks/useChess';
 import ChessProvider from '@/shared/contexts/ChessContext/ChessProvider';
+import useChess from '@/shared/hooks/useChess';
 
 const pgn1 = `
 [Event "25th ch-EUR Indiv 2025"]
@@ -112,16 +112,18 @@ const pgn4 = `[Event "?"]
 Qe7) *`;
 
 export default function Chess() {
-  const chess = useChess();
+    const chess = useChess();
+    const { moveList } = chess;
 
-  return (
-    <ChessProvider pgn={pgn3} chess={chess}>
-      <div className="m-auto flex gap-x-4">
-        <ChessBoard />
-        <div className="w-[256px]">
-          <ChessMoves moveList={chess.moveList.moves} />
-        </div>
-      </div>
-    </ChessProvider>
-  );
+    return (
+        <ChessProvider pgn={pgn2} chess={chess}>
+            <div className="m-auto flex gap-x-4">
+                <ChessBoard />
+
+                <div className="w-[400px]">
+                    <ChessMoves moves={moveList.moves} />
+                </div>
+            </div>
+        </ChessProvider>
+    );
 }
