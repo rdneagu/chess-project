@@ -297,8 +297,6 @@ export function parsePgn(pgn: string): TChessPgn {
     const moveText = fullMoveText.replaceAll('\n', ' ').replaceAll('[ ]+', ' ').slice(0, fullMoveText.lastIndexOf(' '));
     const moves = parseMoveText(moveText);
 
-    console.log(moves);
-
     return {
         headers,
         moves,

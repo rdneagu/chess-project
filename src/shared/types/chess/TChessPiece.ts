@@ -1,9 +1,7 @@
-import { TChessPieceColor } from './TChessPieceColor';
-import { TChessPieceSymbol } from './TChessPieceSymbol';
-import { TChessSquare } from './TChessSquare';
+import { Color, PieceSymbol, Square } from 'chess.js';
 
 export type TChessPiece = {
-  type: TChessPieceSymbol;
-  color: TChessPieceColor;
-  square: TChessSquare;
+    type: PieceSymbol;
+    color: Color;
+    square: Square;
 };

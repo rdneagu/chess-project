@@ -2,13 +2,19 @@ import { Color, PieceSymbol, Square } from 'chess.js';
 import { ChessMoveLinkedList } from './ChessMoveLinkedList';
 
 export type TChessMove = {
-    parent: ChessMoveLinkedList;
     moveId: number;
+    parent: ChessMoveLinkedList;
+    variationFrom?: TChessMove;
     ravs?: ChessMoveLinkedList[];
     ply: number;
     san: string;
     beforeFen: string;
     afterFen: string;
+    moveNag?: number;
+    positionNag?: number;
+    timeNag?: number;
+    beforeComment?: string;
+    afterComment?: string;
     color: Color;
     from: Square;
     to: Square;

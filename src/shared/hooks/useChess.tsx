@@ -14,6 +14,7 @@ export default function useChess() {
     const [possibleMoves, setPossibleMoves] = useState<Move[]>([]);
     const [selectedPiece, setSelectedPiece] = useState<TChessPiece | null>(null);
     const [selectedMove, setSelectedMove] = useState<TChessMove | null>(null);
+    const [lastViewedVariation, setLastViewedVariation] = useState<ChessMoveLinkedList | null>(null);
 
     const pieces = useMemo(() => board.flat().filter((piece) => piece !== null), [board]);
 
@@ -50,8 +51,9 @@ export default function useChess() {
                         selectedMove.nextMove.ravs = [];
                     }
                     selectedMove.nextMove.ravs = [...selectedMove.nextMove.ravs, parent];
+                    parent.setVariationFrom(selectedMove);
                 }
-                const generatedMove = parent.generateMove(chess, move.san);
+                const generatedMove = parent.generateMove(chess, { san: move.san });
                 selectedMove.parent.updateMoves();
                 selectMove(generatedMove);
             }
@@ -59,13 +61,27 @@ export default function useChess() {
         [chess, selectMove, selectedMove],
     );
 
+    const leaveVariation = useCallback(() => {
+        if (selectedMove?.parent.variationFrom) {
+            setLastViewedVariation(selectedMove.parent);
+            selectMove(selectedMove.parent.variationFrom);
+        }
+    }, [selectedMove, selectMove]);
+
+    const returnToVariation = useCallback(() => {
+        if (lastViewedVariation) {
+            selectMove(lastViewedVariation.firstMove);
+            setLastViewedVariation(null);
+        }
+    }, [lastViewedVariation, selectMove]);
+
     const showPreviousMove = useCallback(() => {
-        selectMove(selectedMove?.previousMove ?? selectedMove?.parent.lastMove ?? moveList.lastMove);
-    }, [selectedMove, selectMove, moveList]);
+        selectMove(selectedMove?.previousMove);
+    }, [selectedMove, selectMove]);
 
     const showNextMove = useCallback(() => {
-        selectMove(selectedMove?.nextMove ?? selectedMove?.parent.firstMove ?? moveList.firstMove);
-    }, [selectedMove, selectMove, moveList]);
+        selectMove(selectedMove?.nextMove);
+    }, [selectedMove, selectMove]);
 
     const showFirstMove = useCallback(() => {
         selectMove(selectedMove?.parent.firstMove ?? moveList.firstMove);
@@ -123,5 +139,7 @@ export default function useChess() {
         showPreviousMove,
         showNextMove,
         showLastMove,
+        leaveVariation,
+        returnToVariation,
     };
 }

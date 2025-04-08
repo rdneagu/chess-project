@@ -2,27 +2,40 @@ import { Chess } from 'chess.js';
 import type { TChessMove } from './TChessMove';
 import { TChessPgnMove } from './TChessPgnMove';
 
+type TMoveGenerate = {
+    san: string;
+    beforeComment?: string;
+    afterComment?: string;
+    moveNag?: number;
+    positionNag?: number;
+    timeNag?: number;
+};
+
 export class ChessMoveLinkedList {
     private static UNIQUE_MOVE_ID = 0;
 
     private _firstMove?: TChessMove;
     private _lastMove?: TChessMove;
-    private _length: number;
-    private _moves: TChessMove[];
-
-    constructor(firstMove?: TChessMove, lastMove?: TChessMove, length?: number, moves?: TChessMove[]) {
-        this._firstMove = firstMove;
-        this._lastMove = lastMove;
-        this._length = length ?? 0;
-        this._moves = moves ?? [];
-    }
+    private _moves: TChessMove[] = [];
+    private _variationFrom?: TChessMove;
 
     static createMoveListFromPgn(chess: Chess, pgnMoves: TChessPgnMove[]): ChessMoveLinkedList {
         const moves = new ChessMoveLinkedList();
         pgnMoves.forEach((move) => {
-            const lastMove = moves.generateMove(chess, move.san);
+            const lastMove = moves.generateMove(chess, {
+                san: move.san,
+                beforeComment: move.beforeComment,
+                afterComment: move.afterComment,
+                moveNag: move.moveNag,
+                positionNag: move.positionNag,
+                timeNag: move.timeNag,
+            });
             if (move.rav) {
-                lastMove.ravs = move.rav.map((rav) => ChessMoveLinkedList.createMoveListFromPgn(new Chess(lastMove.beforeFen), rav));
+                lastMove.ravs = move.rav.map((rav) => {
+                    const nextList = ChessMoveLinkedList.createMoveListFromPgn(new Chess(lastMove.beforeFen), rav);
+                    nextList._variationFrom = lastMove.previousMove;
+                    return nextList;
+                });
             }
         });
         return moves;
@@ -36,16 +49,25 @@ export class ChessMoveLinkedList {
         return this._lastMove;
     }
 
+    get variationFrom() {
+        return this._variationFrom;
+    }
+
     get length() {
-        return this._length;
+        return this._moves.length;
     }
 
     get moves() {
         return this._moves;
     }
 
-    generateMove(chess: Chess, san: string): TChessMove {
-        chess.move(san);
+    setVariationFrom(variationFrom: TChessMove) {
+        this._variationFrom = variationFrom;
+        return this;
+    }
+
+    generateMove(chess: Chess, moveGenerate: TMoveGenerate): TChessMove {
+        chess.move(moveGenerate.san);
         const [lastMove] = chess.history({ verbose: true }).slice(-1);
         const [ply] = lastMove.before.match(/\d+$/) ?? [];
         if (!ply) {
@@ -54,12 +76,17 @@ export class ChessMoveLinkedList {
         const moveId = ChessMoveLinkedList.UNIQUE_MOVE_ID++;
 
         const generatedMove: TChessMove = {
-            parent: this,
             moveId,
+            parent: this,
             ply: +ply,
-            san,
+            san: moveGenerate.san,
             beforeFen: lastMove.before,
             afterFen: lastMove.after,
+            beforeComment: moveGenerate.beforeComment,
+            afterComment: moveGenerate.afterComment,
+            moveNag: moveGenerate.moveNag,
+            positionNag: moveGenerate.positionNag,
+            timeNag: moveGenerate.timeNag,
             color: lastMove.color,
             from: lastMove.from,
             to: lastMove.to,
@@ -87,8 +114,6 @@ export class ChessMoveLinkedList {
             this._lastMove = move;
         }
         this._moves = [...this._moves, move];
-        this._length++;
-
         return this;
     }
 
@@ -113,16 +138,11 @@ export class ChessMoveLinkedList {
 
         // Remove from array
         this._moves = this._moves.filter((_, i) => i !== moveIndex);
-        this._length--;
-
         return this;
     }
 
-    updateMoves(): void {
+    updateMoves() {
         this._moves = this._moves.slice();
-    }
-
-    clone() {
-        return new ChessMoveLinkedList(this._firstMove, this._lastMove, this._length, this._moves.slice());
+        return this;
     }
 }

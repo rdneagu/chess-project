@@ -1,36 +1,75 @@
 import clsx from 'clsx';
-import { useContext, useMemo } from 'react';
+import { useContext, useEffect, useMemo, useRef } from 'react';
+import { Group } from '@mantine/core';
+import ChessMoveComment from './_components/ChessMoveComment/ChessMoveComment';
 import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
+import { TChessMove } from '@/shared/types/chess/TChessMove';
+import { getChessPieceClass } from '@/shared/util/ChessUtil';
+import { TChessPiece } from '@/shared/types/chess/TChessPiece';
+import './ChessMove.css';
+import ChessMoveNag from './_components/ChessMoveNag/ChessMoveNag';
+import { CHESS_NAG_MAP } from '@/shared/types/chess/Chess.constants';
+import { EChessNag } from '@/shared/types/chess/EChessNag';
 
 type ChessMoveProps = {
-    id?: number;
-    san?: string;
+    move?: TChessMove;
     isContinuation?: boolean;
-    onMoveSelect: (id?: number) => void;
 };
 
-export default function ChessMove({ id, san, isContinuation, onMoveSelect }: ChessMoveProps) {
-    const { selectedMove } = useContext(ChessContext);
+export default function ChessMove({ move, isContinuation }: ChessMoveProps) {
+    const { selectMove, selectedMove } = useContext(ChessContext);
+    const moveRef = useRef<HTMLDivElement>(null);
 
-    const selected = useMemo(() => selectedMove?.moveId === id, [selectedMove, id]);
     const moveText = useMemo(() => {
         if (isContinuation) {
             return '...';
         }
 
-        return san;
-    }, [isContinuation, san]);
+        return move?.san;
+    }, [isContinuation, move]);
+
+    const piece = useMemo<TChessPiece | undefined>(() => {
+        if (move) {
+            return {
+                type: move.piece,
+                color: move.color,
+                square: move.from,
+            };
+        }
+        return undefined;
+    }, [move]);
+
+    const moveNag = useMemo(() => {
+        if (move && move.moveNag) {
+            return CHESS_NAG_MAP[move.moveNag as EChessNag];
+        }
+        return undefined;
+    }, [move]);
+
+    useEffect(() => {
+        if (selectedMove === move) {
+            moveRef.current?.scrollIntoView({ block: 'center' });
+        }
+    }, [selectedMove, move]);
 
     return (
-        <div className="flex-1">
-            <span
-                className={clsx('rounded px-1 py-px select-none', {
-                    'cursor-pointer hover:bg-indigo-400/20': id !== undefined,
-                    'bg-indigo-400': selected,
+        <div className="move flex flex-1" ref={moveRef}>
+            <Group
+                gap="4"
+                className={clsx('my-0.5 flex rounded py-0.5 pr-2 pl-1 text-center select-none', {
+                    'cursor-pointer hover:bg-slate-400/15': move !== undefined,
+                    '!bg-slate-400/30': selectedMove === move,
                 })}
-                onClick={() => onMoveSelect(id)}>
-                {moveText}
-            </span>
+                style={{ color: moveNag?.color ?? 'inherit' }}
+                onClick={() => selectMove(move)}>
+                <ChessMoveComment>{move?.beforeComment}</ChessMoveComment>
+
+                {move && <div className={clsx('h-5 w-5', getChessPieceClass(piece))} />}
+                <span className="flex-1">{moveText}</span>
+                <ChessMoveNag moveNag={moveNag} />
+
+                <ChessMoveComment>{move?.afterComment}</ChessMoveComment>
+            </Group>
         </div>
     );
 }

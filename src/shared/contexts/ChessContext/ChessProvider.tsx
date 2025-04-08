@@ -5,16 +5,18 @@ import useChess from '@/shared/hooks/useChess';
 import { parsePgn } from '@/shared/util/PgnUtil';
 
 type ChessProviderProps = {
-  pgn: string;
-  chess: ReturnType<typeof useChess>;
+    pgn: string;
+    chess: ReturnType<typeof useChess>;
 } & TReactWrapper;
 
 export default function ChessProvider({ pgn, chess, children }: ChessProviderProps) {
-  const { loadGame } = chess;
+    const { loadGame } = chess;
 
-  useEffect(() => {
-    loadGame(parsePgn(pgn));
-  }, [pgn, loadGame]);
+    useEffect(() => {
+        if (pgn) {
+            loadGame(parsePgn(pgn));
+        }
+    }, [pgn, loadGame]);
 
-  return <ChessContext.Provider value={chess}>{children}</ChessContext.Provider>;
+    return <ChessContext.Provider value={chess}>{children}</ChessContext.Provider>;
 }

@@ -1,9 +1,8 @@
 import { Group, Stack } from '@mantine/core';
-import { useCallback, useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import ChessMove from './_components/ChessMove/ChessMove';
 import { TChessMove } from '@/shared/types/chess/TChessMove';
 import { ChessMoveLinkedList } from '@/shared/types/chess/ChessMoveLinkedList';
-import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
 
 type ChessMovesProps = {
     moves: TChessMove[];
@@ -12,14 +11,12 @@ type ChessMovesProps = {
 type TGroupedMove = {
     ply: number;
     groupId: number;
-    left?: TChessMove | null;
-    right?: TChessMove | null;
+    left?: TChessMove;
+    right?: TChessMove;
     ravs?: ChessMoveLinkedList[] | null;
 };
 
 export default function ChessMoves({ moves }: ChessMovesProps) {
-    const { selectMove } = useContext(ChessContext);
-
     /** Groups moves into left (white) and right (black) with '...' for variations  */
     const groupedMoves = useMemo(() => {
         let groupId = 0;
@@ -52,39 +49,15 @@ export default function ChessMoves({ moves }: ChessMovesProps) {
         }, []);
     }, [moves]);
 
-    const onMoveSelect = useCallback(
-        (moveId?: number) => {
-            if (moveId === undefined) {
-                return;
-            }
-
-            const move = moves.find((m) => m.moveId === moveId);
-            if (move) {
-                selectMove(move);
-            }
-        },
-        [moves, selectMove],
-    );
-
     return (
-        <div className="chess-moves flex h-full max-h-[512px] w-full flex-col overflow-x-hidden overflow-y-auto">
+        <div className="chess-moves w-full overflow-x-hidden overflow-y-auto">
             {groupedMoves.map((groupedMove, i) => (
                 <Stack key={i} gap={0} className="ml-1">
                     <Group className="rounded-sm">
                         <span className="w-4 text-right">{groupedMove.ply}</span>
                         <div className="flex flex-1">
-                            <ChessMove
-                                id={groupedMove.left?.moveId}
-                                san={groupedMove.left?.san}
-                                isContinuation={!groupedMove.left}
-                                onMoveSelect={(moveId) => onMoveSelect(moveId)}
-                            />
-                            <ChessMove
-                                id={groupedMove.right?.moveId}
-                                san={groupedMove.right?.san}
-                                isContinuation={!groupedMove.right && groupedMove.left?.nextMove !== undefined}
-                                onMoveSelect={(moveId) => onMoveSelect(moveId)}
-                            />
+                            <ChessMove move={groupedMove.left} isContinuation={!groupedMove.left} />
+                            <ChessMove move={groupedMove.right} isContinuation={!groupedMove.right && groupedMove.left?.nextMove !== undefined} />
                         </div>
                     </Group>
                     {groupedMove.ravs?.map((rav, ravIndex) => (
