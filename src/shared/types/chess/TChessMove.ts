@@ -13,8 +13,7 @@ export type TChessMove = {
     moveNag?: number;
     positionNag?: number;
     timeNag?: number;
-    beforeComment?: string;
-    afterComment?: string;
+    comment?: string;
     color: Color;
     from: Square;
     to: Square;

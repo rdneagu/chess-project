@@ -1,8 +1,8 @@
 import { Button, Group, Stack, Textarea } from '@mantine/core';
 import { useState } from 'react';
 import { useForm } from '@mantine/form';
-import ChessBoard from '../ChessBoard/ChessBoard';
-import ChessMoves from '../ChessMoves/ChessMoves';
+import ChessBoard from './_components/ChessBoard/ChessBoard';
+import ChessMoveSet from './_components/ChessHistory/ChessMoveSet';
 import ChessProvider from '@/shared/contexts/ChessContext/ChessProvider';
 import useChess from '@/shared/hooks/useChess';
 // const pgn1 = `
@@ -45,7 +45,7 @@ import useChess from '@/shared/hooks/useChess';
 // [Result "*"]
 // [Link "https://www.chess.com/analysis/library/4uNL5wDqzE?tab=analysis"]
 
-// 1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. d3 Bc5 5. O-O d6 6. c3 (6. Re1 Ng4 7. Re2 O-O
+// 1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. d3 Bc5 5. O-O {comment after} d6 6. c3 (6. Re1 Ng4 7. Re2 O-O
 // ({comment before} 7... Be6 {comment after} 8. Ng5 (8. h3 {comment after}))) 6... O-O 7. Re1 a5
 // 8. Bb5 Bd7 *`;
 
@@ -141,8 +141,8 @@ export default function Chess() {
                 {pgn && (
                     <Group align="center">
                         <ChessBoard />
-                        <div className="max-h-[600px] w-[400px] overflow-auto rounded bg-violet-400/10 py-2 pl-1">
-                            <ChessMoves moves={moveList.moves} />
+                        <div className="max-h-[600px] w-[512px] overflow-auto rounded bg-slate-800">
+                            <ChessMoveSet moves={moveList.moves} />
                         </div>
                     </Group>
                 )}

@@ -10,5 +10,5 @@ export default function ChessMoveNag({ moveNag }: ChessMoveNagProps) {
         return null;
     }
 
-    return <div className={clsx('flex items-center justify-center text-xs font-bold')}>{moveNag.label}</div>;
+    return <div className={clsx('ml-1 flex items-center justify-center text-xs font-bold')}>{moveNag.label}</div>;
 }

@@ -6,6 +6,6 @@ type TablerIconAdapterComponent = {
     size?: number;
 } & Partial<TReactWrapper>;
 
-export default function TablerIconAdapter({ icon: Icon, size = 18, ref }: TablerIconAdapterComponent) {
-    return <Icon size={size} ref={ref} />;
+export default function TablerIconAdapter({ icon: Icon, size = 18, className, style, ref }: TablerIconAdapterComponent) {
+    return <Icon size={size} ref={ref} className={className} style={style} />;
 }

@@ -2,6 +2,9 @@ import { TChessPgnHeaders } from '../types/chess/TChessPgnHeaders';
 import { clampNumber } from './NumberUtil';
 import { TChessPgn } from '@/shared/types/chess/TChessPgn';
 import { TChessPgnMove } from '@/shared/types/chess/TChessPgnMove';
+import type { TChessPgnVariation } from '@/shared/types/chess/TChessPgnVariation';
+
+const VALID_MOVE_CHAR = 'BNRQKxa-h1-8+#O-';
 
 function throwIfProcessingSAN(moveText: string, moveTextIndex: number, processingSAN: string) {
     if (processingSAN) {
@@ -156,25 +159,20 @@ function parseNextComment(fullMoveText: string, moveTextIndex: number) {
 }
 
 /**
- * Adds a comment to a move
+ * Adds a comment to a move or variation
  *
- * @param move - The move to add the comment to
+ * @param moveOrVariation - The move or variation to add the comment to
  * @param comment - The comment to add
- * @param isBefore - Whether the comment is marked as beforeComment or afterComment
- * @returns The comment if it's not associated with a move, otherwise undefined
  */
-function addCommentToMove(move: TChessPgnMove | undefined, comment: string, isBefore?: boolean) {
-    if (move) {
+function addCommentToMove(moveOrVariation: TChessPgnMove | TChessPgnVariation | undefined, comment: string) {
+    const isUnsupportedCommentToken = /\[%.+?\]/.test(comment); // [%cal ...][%csl ...][%clk ...] and any other token we don't support
+    // const commentIsClock = /\[%clk \d{1,2}:\d{1,2}:\d{1,2}\]/.test(comment); // TODO: We should probably parse this as clock time
+    // const commentIsArrow = new RegExp(`\\[%cal (?:[${VALID_MOVE_CHAR},]+)+\\]`).test(comment); // TODO: We should probably parse this as arrow drawing
+    // const commentIsHighlight = new RegExp(`\\[%csl (?:[${VALID_MOVE_CHAR},]+)+\\]`).test(comment); // TODO: We should probably parse this as circle highlight
+    if (moveOrVariation && !moveOrVariation.comment && !isUnsupportedCommentToken) {
         const trimmedComment = comment.replaceAll('\\}', '}').trim().slice(1, -1).trim(); // Remove escapes, first and last bracket and extra spaces before and after slice
-        if (isBefore) {
-            move.beforeComment = trimmedComment;
-        } else {
-            move.afterComment = trimmedComment;
-        }
-    } else {
-        return comment;
+        moveOrVariation.comment = trimmedComment;
     }
-    return undefined;
 }
 
 /**
@@ -186,7 +184,11 @@ function addCommentToMove(move: TChessPgnMove | undefined, comment: string, isBe
 function addRavToMove(move: TChessPgnMove | undefined, variant: string) {
     if (move) {
         const trimmedVariant = variant.trim().slice(1, -1).trim(); // Remove first and last parenthesis and trim (double trim to remove extra spaces e.g. " ( <VARIANT> ) ")
-        move.rav = [parseMoveText(trimmedVariant, move.turn)];
+        const variation: TChessPgnVariation = {
+            moves: [],
+        };
+        variation.moves = parseMoveText(trimmedVariant, move.turn, variation);
+        move.rav = [...(move.rav ?? []), variation];
     }
 }
 
@@ -213,13 +215,12 @@ function addNagToMove(move: TChessPgnMove | undefined, moveNag: number, position
  * @param turn - The turn of the move
  * @returns The parsed move text
  */
-function parseMoveText(moveText: string, turn = 0): TChessPgnMove[] {
+function parseMoveText(moveText: string, turn = 0, variation?: TChessPgnVariation): TChessPgnMove[] {
     const moves: TChessPgnMove[] = [];
     let currentPly = 0;
     let currentMove: TChessPgnMove | undefined;
     let currentTurn = turn;
     let processingSAN = '';
-    let pendingComment: string | undefined; // Pending comment is used to store comments that are not associated with a move yet, it will be added as a before comment to the next move
 
     for (let i = 0; i < moveText.length; i++) {
         const char = moveText[i];
@@ -227,7 +228,13 @@ function parseMoveText(moveText: string, turn = 0): TChessPgnMove[] {
 
         if (char === '{') {
             const { comment, commentLength } = parseNextComment(moveText, i);
-            pendingComment = addCommentToMove(currentMove, comment);
+            if (currentPly) {
+                addCommentToMove(currentMove, comment);
+            } else if (variation) {
+                addCommentToMove(variation, comment);
+            } else {
+                console.warn('Comment found outside of move or variation', comment);
+            }
             i += commentLength;
             continue; // Skip to the next character
         }
@@ -237,7 +244,7 @@ function parseMoveText(moveText: string, turn = 0): TChessPgnMove[] {
             currentPly = ply;
             i += plyLength;
         } else if (currentPly) {
-            if (/[BNRQKxa-h1-8+#O-]/.test(char)) {
+            if (new RegExp(`[${VALID_MOVE_CHAR}]`).test(char)) {
                 processingSAN += char;
                 if (nextChar === ' ') {
                     currentMove = {
@@ -248,10 +255,6 @@ function parseMoveText(moveText: string, turn = 0): TChessPgnMove[] {
                     moves.push(currentMove);
                     currentTurn = +!currentTurn; // Switch turn
                     processingSAN = ''; // Reset processingSAN since next character is space means we're done with current SAN move string
-
-                    if (pendingComment) {
-                        pendingComment = addCommentToMove(currentMove, pendingComment, true);
-                    }
                 }
             } else if (char === ' ') {
                 if (/\d/.test(nextChar)) {
@@ -296,6 +299,8 @@ export function parsePgn(pgn: string): TChessPgn {
 
     const moveText = fullMoveText.replaceAll('\n', ' ').replaceAll('[ ]+', ' ').slice(0, fullMoveText.lastIndexOf(' '));
     const moves = parseMoveText(moveText);
+
+    console.log(moves);
 
     return {
         headers,

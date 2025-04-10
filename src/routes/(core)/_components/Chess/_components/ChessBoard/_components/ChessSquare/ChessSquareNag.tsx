@@ -1,9 +1,9 @@
 import { useMemo, useContext } from 'react';
 import clsx from 'clsx';
 import ChessSquare from './ChessSquare';
-import { CHESS_NAG_MAP } from '@/shared/types/chess/Chess.constants';
 import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
 import { EChessNag } from '@/shared/types/chess/EChessNag';
+import { CHESS_NAG_MAP } from '@/shared/types/chess/constants/Chess';
 
 export default function ChessSquareNag() {
     const { selectedMove } = useContext(ChessContext);

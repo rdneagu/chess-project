@@ -1,11 +1,11 @@
 import { useContext } from 'react';
 import { useHotkeys, useThrottledCallback } from '@mantine/hooks';
 import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
-import ChessSquare from '../ChessSquare/ChessSquare';
-import { EChessSquareType } from '../ChessSquare/types/EChessSquareType';
-import ChessSquarePiece from '../ChessSquare/ChessSquarePiece';
-import ChessSquareMove from '../ChessSquare/ChessSquareMove';
-import ChessSquareNag from '../ChessSquare/ChessSquareNag';
+import ChessSquare from './_components/ChessSquare/ChessSquare';
+import { EChessSquareType } from './_components/ChessSquare/types/EChessSquareType';
+import ChessSquarePiece from './_components/ChessSquare/ChessSquarePiece';
+import ChessSquareMove from './_components/ChessSquare/ChessSquareMove';
+import ChessSquareNag from './_components/ChessSquare/ChessSquareNag';
 import ChessBoardRanks from './_components/ChessBoardRanks/ChessBoardRanks';
 import ChessBoardFiles from './_components/ChessBoardFiles/ChessBoardFiles';
 import IconButtonAdapter from '@/shared/components/ButtonAdapter/IconButtonAdapter';

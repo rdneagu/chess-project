@@ -4,8 +4,7 @@ import { TChessPgnMove } from './TChessPgnMove';
 
 type TMoveGenerate = {
     san: string;
-    beforeComment?: string;
-    afterComment?: string;
+    comment?: string;
     moveNag?: number;
     positionNag?: number;
     timeNag?: number;
@@ -17,23 +16,24 @@ export class ChessMoveLinkedList {
     private _firstMove?: TChessMove;
     private _lastMove?: TChessMove;
     private _moves: TChessMove[] = [];
-    private _variationFrom?: TChessMove;
+    private _ravFrom?: TChessMove;
+    private _comment?: string;
 
     static createMoveListFromPgn(chess: Chess, pgnMoves: TChessPgnMove[]): ChessMoveLinkedList {
         const moves = new ChessMoveLinkedList();
         pgnMoves.forEach((move) => {
             const lastMove = moves.generateMove(chess, {
                 san: move.san,
-                beforeComment: move.beforeComment,
-                afterComment: move.afterComment,
+                comment: move.comment,
                 moveNag: move.moveNag,
                 positionNag: move.positionNag,
                 timeNag: move.timeNag,
             });
             if (move.rav) {
                 lastMove.ravs = move.rav.map((rav) => {
-                    const nextList = ChessMoveLinkedList.createMoveListFromPgn(new Chess(lastMove.beforeFen), rav);
-                    nextList._variationFrom = lastMove.previousMove;
+                    const nextList = ChessMoveLinkedList.createMoveListFromPgn(new Chess(lastMove.beforeFen), rav.moves);
+                    nextList._ravFrom = lastMove.previousMove;
+                    nextList._comment = rav.comment;
                     return nextList;
                 });
             }
@@ -50,7 +50,7 @@ export class ChessMoveLinkedList {
     }
 
     get variationFrom() {
-        return this._variationFrom;
+        return this._ravFrom;
     }
 
     get length() {
@@ -61,8 +61,12 @@ export class ChessMoveLinkedList {
         return this._moves;
     }
 
+    get comment() {
+        return this._comment;
+    }
+
     setVariationFrom(variationFrom: TChessMove) {
-        this._variationFrom = variationFrom;
+        this._ravFrom = variationFrom;
         return this;
     }
 
@@ -82,8 +86,7 @@ export class ChessMoveLinkedList {
             san: moveGenerate.san,
             beforeFen: lastMove.before,
             afterFen: lastMove.after,
-            beforeComment: moveGenerate.beforeComment,
-            afterComment: moveGenerate.afterComment,
+            comment: moveGenerate.comment,
             moveNag: moveGenerate.moveNag,
             positionNag: moveGenerate.positionNag,
             timeNag: moveGenerate.timeNag,

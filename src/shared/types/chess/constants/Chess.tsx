@@ -1,7 +1,7 @@
 import { IconX } from '@tabler/icons-react';
 import colors from 'tailwindcss/colors';
-import { EChessNag } from './EChessNag';
-import { TChessNag } from './TChessNag';
+import { EChessNag } from '../EChessNag';
+import type { TChessNag } from '../TChessNag';
 import TablerIconAdapter from '@/shared/components/TablerIconAdapter/TablerIconAdapter';
 
 export const CHESS_NAG_MAP: Partial<Record<EChessNag, TChessNag>> = {
