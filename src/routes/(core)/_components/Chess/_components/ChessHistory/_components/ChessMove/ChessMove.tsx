@@ -1,10 +1,11 @@
 import clsx from 'clsx';
-import { useContext, useEffect, useMemo, useRef } from 'react';
-import { Group } from '@mantine/core';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { Group, Menu } from '@mantine/core';
 import { mergeRefs } from '@mantine/hooks';
 import { getChessPieceClass } from '../../../../../../../../shared/util/ChessUtil';
 import type { TReactWrapper } from '../../../../../../../../shared/types/react/TReactWrapper';
 import ChessMoveNag from './_components/ChessMoveNag/ChessMoveNag';
+import ChessMoveContextMenu from './_components/ChessMoveContextMenu/ChessMoveContextMenu';
 import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
 import { TChessMove } from '@/shared/types/chess/TChessMove';
 import { TChessPiece } from '@/shared/types/chess/TChessPiece';
@@ -19,6 +20,8 @@ type ChessMoveProps = {
 
 export default function ChessMove({ move, isContinuation, ref }: ChessMoveProps) {
     const { selectMove, selectedMove } = useContext(ChessContext);
+
+    const [contextMenuOpened, setContextMenuOpened] = useState(false);
 
     const moveRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +44,11 @@ export default function ChessMove({ move, isContinuation, ref }: ChessMoveProps)
         return undefined;
     }, [move]);
 
+    const onContextMenu = useCallback((ev: MouseEvent) => {
+        setContextMenuOpened(true);
+        ev.preventDefault();
+    }, []);
+
     const moveNag = useMemo(() => {
         if (move && move.moveNag) {
             return CHESS_NAG_MAP[move.moveNag as EChessNag];
@@ -55,20 +63,30 @@ export default function ChessMove({ move, isContinuation, ref }: ChessMoveProps)
     }, [selectedMove, move, moveRef]);
 
     return (
-        <div className="move my-px mt-1 flex flex-1" ref={mergeRefs(ref, moveRef)}>
-            <Group
-                gap={0}
-                className={clsx('my-0.5 flex rounded py-0.5 pr-2 pl-0.5 text-center select-none', {
-                    'cursor-pointer hover:bg-slate-400/15': move !== undefined,
-                    '!bg-slate-400/30': selectedMove === move,
-                    'font-bold': moveNag,
-                })}
-                style={{ color: moveNag?.color ?? 'inherit' }}
-                onClick={() => selectMove(move)}>
-                {move && <div className={clsx('mr-1 h-5 w-5', getChessPieceClass(piece))} />}
-                <span className="flex-1">{moveText}</span>
-                <ChessMoveNag moveNag={moveNag} />
-            </Group>
+        <div className="move my-0.5 flex flex-1" ref={mergeRefs(ref, moveRef)}>
+            <Menu opened={contextMenuOpened} onDismiss={() => setContextMenuOpened(false)}>
+                <Menu.Target>
+                    <Group
+                        gap={0}
+                        className={clsx('my-0.5 flex rounded py-0.5 pr-2 pl-0.5 text-center select-none', {
+                            'cursor-pointer hover:bg-slate-400/15': move !== undefined,
+                            '!bg-slate-400/30': selectedMove === move,
+                            'font-bold': moveNag,
+                        })}
+                        style={{ color: moveNag?.color ?? 'inherit' }}
+                        onContextMenu={onContextMenu}
+                        onClick={() => selectMove(move)}>
+                        {move && <div className={clsx('mr-1 h-5 w-5', getChessPieceClass(piece))} />}
+                        <span className="flex-1">{moveText}</span>
+                        {moveNag && <ChessMoveNag moveNag={moveNag} />}
+                    </Group>
+                </Menu.Target>
+                {move && (
+                    <Menu.Dropdown>
+                        <ChessMoveContextMenu move={move} />
+                    </Menu.Dropdown>
+                )}
+            </Menu>
         </div>
     );
 }

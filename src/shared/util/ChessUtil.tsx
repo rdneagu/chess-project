@@ -1,5 +1,7 @@
 import { PAWN, KNIGHT, BISHOP, ROOK, QUEEN, KING, WHITE, BLACK, Square } from 'chess.js';
 import { TChessPiece } from '../types/chess/TChessPiece';
+import type { CChessMoveList } from '../types/chess/CChessMoveList';
+import type { CChessMove } from '../types/chess/CChessMove';
 
 const pieceSymbolMap = {
     [PAWN]: 'pawn',
@@ -43,4 +45,22 @@ export function getChessSquarePosition(square?: Square) {
         top: getRankPosition(square[1]),
         left: getFilePosition(square[0]),
     };
+}
+
+export function getMoveListById(moveListMap: CChessMoveList[], moveListId: number) {
+    const moveList = moveListMap.find((findMoveList) => findMoveList.moveListId === moveListId);
+    if (!moveList) {
+        throw new Error(`[ChessUtil][findMoveListById] Move list not found for move list id ${moveListId}`);
+    }
+
+    return moveList;
+}
+
+export function getMoveById(moveMap: CChessMove[], moveId: number) {
+    const move = moveMap.find((findMove) => findMove.moveId === moveId);
+    if (!move) {
+        throw new Error(`[ChessUtil][findMoveById] Move not found for move id ${moveId}`);
+    }
+
+    return move;
 }

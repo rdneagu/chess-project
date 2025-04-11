@@ -1,6 +1,6 @@
 import { useRef } from 'react';
-import type { TChessMove } from '../../../../../../../shared/types/chess/TChessMove';
 import type { TGroupedMove } from '../_types/TGroupedMove';
+import type { TChessMove } from '../../../../../../../shared/types/chess/TChessMove';
 
 export default function useMoveRefs() {
     const moveRefs = useRef<Map<string, HTMLElement>>(null);
@@ -27,7 +27,7 @@ export default function useMoveRefs() {
 
     const getMoveRef = (i: number, groupedMove: TGroupedMove) => {
         const map = getMoveRefsMap();
-        const color = groupedMove.left?.color ?? groupedMove.right?.color;
+        const color = groupedMove.right?.color ?? groupedMove.left?.color;
         if (color) {
             return map.get(i + color);
         }
