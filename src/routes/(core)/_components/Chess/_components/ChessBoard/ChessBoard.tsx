@@ -1,6 +1,6 @@
-import { useContext } from 'react';
 import { useHotkeys, useThrottledCallback } from '@mantine/hooks';
 import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
+import useGameStore from '../../../../../../shared/stores/gameStore';
 import ChessSquare from './_components/ChessSquare/ChessSquare';
 import { EChessSquareType } from './_components/ChessSquare/types/EChessSquareType';
 import ChessSquarePiece from './_components/ChessSquare/ChessSquarePiece';
@@ -10,25 +10,25 @@ import ChessBoardRanks from './_components/ChessBoardRanks/ChessBoardRanks';
 import ChessBoardFiles from './_components/ChessBoardFiles/ChessBoardFiles';
 import IconButtonAdapter from '@/shared/components/ButtonAdapter/IconButtonAdapter';
 import TablerIconAdapter from '@/shared/components/TablerIconAdapter/TablerIconAdapter';
-import { ChessContext } from '@/shared/contexts/ChessContext/ChessContext';
 
 export default function ChessBoard() {
     const {
-        pieces,
-        possibleMoves,
-        selectedMove,
+        getBoardPieces,
+        showFirstMove,
+        showPreviousMove,
+        showNextMove,
+        showLastMove,
         currentTurn,
         checkedSquare,
+        leaveVariation,
+        returnToVariation,
         selectedPiece,
         selectPiece,
         movePiece,
-        showNextMove,
-        showPreviousMove,
-        showFirstMove,
-        showLastMove,
-        leaveVariation,
-        returnToVariation,
-    } = useContext(ChessContext);
+        possibleMoves,
+    } = useGameStore();
+    const selectedMove = useGameStore((state) => state.moveStore.selectedMove);
+    const isSquareChecked = checkedSquare();
 
     const showFirstMoveThrottled = useThrottledCallback(showFirstMove, 50);
     const showPreviousMoveThrottled = useThrottledCallback(showPreviousMove, 50);
@@ -56,14 +56,14 @@ export default function ChessBoard() {
                     </>
                 )}
                 {selectedPiece && <ChessSquare square={selectedPiece?.square} type={EChessSquareType.SELECTED} />}
-                {checkedSquare && <ChessSquare square={checkedSquare} type={EChessSquareType.CHECKED} />}
+                {isSquareChecked && <ChessSquare square={isSquareChecked} type={EChessSquareType.CHECKED} />}
                 {selectedMove && <ChessSquareNag />}
-                {pieces.map((piece) => (
+                {getBoardPieces()?.map((piece) => (
                     <ChessSquarePiece
                         key={piece.square}
                         square={piece.square}
                         piece={piece}
-                        turn={currentTurn}
+                        turn={currentTurn()}
                         onPieceClick={() => selectPiece(piece)}
                     />
                 ))}

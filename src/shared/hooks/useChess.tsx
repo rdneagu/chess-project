@@ -1,145 +1,78 @@
-import { Chess, KING, Move } from 'chess.js';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChessMoveLinkedList } from '../types/chess/ChessMoveLinkedList';
-import { TChessBoard } from '../types/chess/TChessBoard';
-import { TChessMove } from '../types/chess/TChessMove';
-import { TChessPgn } from '../types/chess/TChessPgn';
-import { TChessPiece } from '../types/chess/TChessPiece';
-
 export default function useChess() {
-    const chess = useMemo(() => new Chess(), []);
-
-    const [board, setBoard] = useState<TChessBoard>([]);
-    const [moveList, setMoveList] = useState<ChessMoveLinkedList>(new ChessMoveLinkedList());
-    const [possibleMoves, setPossibleMoves] = useState<Move[]>([]);
-    const [selectedPiece, setSelectedPiece] = useState<TChessPiece | null>(null);
-    const [selectedMove, setSelectedMove] = useState<TChessMove | null>(null);
-    const [lastViewedVariation, setLastViewedVariation] = useState<ChessMoveLinkedList | null>(null);
-
-    const pieces = useMemo(() => board.flat().filter((piece) => piece !== null), [board]);
-
-    const selectMove = useCallback(
-        (move?: TChessMove | null) => {
-            if (move) {
-                chess.load(move.afterFen);
-                setBoard(chess.board());
-                setSelectedMove(move);
-            }
-        },
-        [chess],
-    );
-
-    const loadGame = useCallback(
-        (pgnConfig: TChessPgn) => {
-            chess.reset();
-
-            const generatedMoveList = ChessMoveLinkedList.createMoveListFromPgn(chess, pgnConfig.moves);
-            setMoveList(generatedMoveList);
-            selectMove(generatedMoveList.lastMove);
-        },
-        [chess, selectMove],
-    );
-
-    const movePiece = useCallback(
-        (move: Move) => {
-            if (selectedMove) {
-                let { parent } = selectedMove;
-                if (selectedMove.nextMove) {
-                    // Create new variation if move is not the last move
-                    parent = new ChessMoveLinkedList();
-                    if (!selectedMove.nextMove.ravs) {
-                        selectedMove.nextMove.ravs = [];
-                    }
-                    selectedMove.nextMove.ravs = [...selectedMove.nextMove.ravs, parent];
-                    parent.setVariationFrom(selectedMove);
-                }
-                const generatedMove = parent.generateMove(chess, { san: move.san });
-                selectedMove.parent.updateMoves();
-                selectMove(generatedMove);
-            }
-        },
-        [chess, selectMove, selectedMove],
-    );
-
-    const leaveVariation = useCallback(() => {
-        if (selectedMove?.parent.variationFrom) {
-            setLastViewedVariation(selectedMove.parent);
-            selectMove(selectedMove.parent.variationFrom);
-        }
-    }, [selectedMove, selectMove]);
-
-    const returnToVariation = useCallback(() => {
-        if (lastViewedVariation) {
-            selectMove(lastViewedVariation.firstMove);
-            setLastViewedVariation(null);
-        }
-    }, [lastViewedVariation, selectMove]);
-
-    const showPreviousMove = useCallback(() => {
-        selectMove(selectedMove?.previousMove);
-    }, [selectedMove, selectMove]);
-
-    const showNextMove = useCallback(() => {
-        selectMove(selectedMove?.nextMove);
-    }, [selectedMove, selectMove]);
-
-    const showFirstMove = useCallback(() => {
-        selectMove(selectedMove?.parent.firstMove ?? moveList.firstMove);
-    }, [moveList, selectMove, selectedMove]);
-
-    const showLastMove = useCallback(() => {
-        selectMove(selectedMove?.parent.lastMove ?? moveList.lastMove);
-    }, [moveList, selectMove, selectedMove]);
-
-    const selectPiece = useCallback(
-        (piece: TChessPiece) => {
-            const nextSelectedPiece = selectedPiece === null || selectedPiece.square !== piece.square ? piece : null;
-            setSelectedPiece(nextSelectedPiece);
-
-            const nextPossibleMoves = nextSelectedPiece ? chess.moves({ square: nextSelectedPiece.square, verbose: true }) : [];
-            setPossibleMoves(nextPossibleMoves);
-        },
-        [chess, selectedPiece],
-    );
-
-    const deselectPiece = useCallback(() => {
-        setSelectedPiece(null);
-        setPossibleMoves([]);
-    }, []);
-
-    const currentTurn = useMemo(() => chess.turn(), [chess, selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
-    const isCheck = useMemo(() => chess.inCheck(), [chess, selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const checkedSquare = useMemo(() => {
-        if (!isCheck) {
-            return undefined;
-        }
-        const foundKing = pieces.find((piece) => piece.type === KING && piece.color === currentTurn);
-        return foundKing?.square;
-    }, [isCheck, currentTurn, pieces]);
-
-    useEffect(() => {
-        deselectPiece();
-    }, [selectedMove, deselectPiece]);
-
-    return {
-        board,
-        pieces,
-        moveList,
-        possibleMoves,
-        selectedPiece,
-        selectedMove,
-        currentTurn,
-        checkedSquare,
-        loadGame,
-        movePiece,
-        selectPiece,
-        selectMove,
-        showFirstMove,
-        showPreviousMove,
-        showNextMove,
-        showLastMove,
-        leaveVariation,
-        returnToVariation,
-    };
+    // const [board, setBoard] = useAtom(boardAtom);
+    // const [moveList, setMoveList] = useAtom(moveListAtom);
+    // const [possibleMoves, setPossibleMoves] = useAtom(possibleMovesAtom);
+    // const [selectedPiece, setSelectedPiece] = useAtom(selectedPieceAtom);
+    // const [selectedMove, setSelectedMove] = useAtom(selectedMoveAtom);
+    // const [lastViewedVariation, setLastViewedVariation] = useAtom(lastViewedVariationAtom);
+    // const { chess, moveStore, moveListStore } = useGameStore();
+    // const { moveLists, generateMoveList } = moveListStore;
+    // const { moves } = moveStore;
+    // const pieces = useMemo(() => board.flat().filter((piece) => piece !== null), [board]);
+    // const selectPiece = useCallback(
+    //     (piece: TChessPiece) => {
+    //         const nextSelectedPiece = selectedPiece === null || selectedPiece.square !== piece.square ? piece : null;
+    //         setSelectedPiece(nextSelectedPiece);
+    //         const nextPossibleMoves = nextSelectedPiece ? chess.moves({ square: nextSelectedPiece.square, verbose: true }) : [];
+    //         setPossibleMoves(nextPossibleMoves);
+    //     },
+    //     [selectedPiece, setPossibleMoves, setSelectedPiece],
+    // );
+    // const deselectPiece = useCallback(() => {
+    //     setSelectedPiece(null);
+    //     setPossibleMoves([]);
+    // }, [setPossibleMoves, setSelectedPiece]);
+    // const currentTurn = useMemo(() => chess.turn(), [selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
+    // const isCheck = useMemo(() => chess.inCheck(), [selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
+    // const checkedSquare = useMemo(() => {
+    //     if (!isCheck) {
+    //         return undefined;
+    //     }
+    //     const foundKing = pieces.find((piece) => piece.type === KING && piece.color === currentTurn);
+    //     return foundKing?.square;
+    // }, [isCheck, currentTurn, pieces]);
+    // const addComment = useCallback(
+    //     (move: TChessMove, comment?: string) => {
+    //         move.comment = comment;
+    //         const { parent } = move;
+    //         const moveIndex = parent.moves.findIndex((findMove) => findMove.moveId === move.moveId);
+    //         if (moveIndex !== -1) {
+    //             parent.moves.splice(moveIndex, 1, { ...move });
+    //         }
+    //         let listParent: ChessMoveLinkedList | undefined = parent;
+    //         while (listParent) {
+    //             if (!listParent.parent) {
+    //                 break;
+    //             }
+    //             listParent.updateMoves();
+    //             listParent = listParent.parent;
+    //         }
+    //         setMoveList(produce(listParent, (draft) => draft));
+    //     },
+    //     [setMoveList],
+    // );
+    // useEffect(() => {
+    //     deselectPiece();
+    // }, [selectedMove, deselectPiece]);
+    // return {
+    //     board,
+    //     pieces,
+    //     moveList,
+    //     possibleMoves,
+    //     selectedPiece,
+    //     selectedMove,
+    //     currentTurn,
+    //     checkedSquare,
+    //     loadGame,
+    //     movePiece,
+    //     selectPiece,
+    //     selectMove,
+    //     showFirstMove,
+    //     showPreviousMove,
+    //     showNextMove,
+    //     showLastMove,
+    //     leaveVariation,
+    //     returnToVariation,
+    //     addComment,
+    // };
 }

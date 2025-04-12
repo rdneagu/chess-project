@@ -1,22 +1,29 @@
 import { Group, Stack } from '@mantine/core';
 import { useMemo } from 'react';
+import useGameStore from '../../../../../../shared/stores/gameStore';
+import { TChessMoveId } from '../../../../../../shared/types/chess/TChessMoveId';
 import ChessMove from './_components/ChessMove/ChessMove';
-import ChessMoveComment from './_components/ChessMoveComment/ChessMoveComment';
 import useMoveRefs from './_hooks/useMoveRefs';
-import type { TGroupedMove } from './_types/TGroupedMove';
-import { TChessMove } from '@/shared/types/chess/TChessMove';
+import ChessMoveRavs from './_components/ChessMoveRavs/ChessMoveRavs';
+import { TGroupedMove } from './_types/TGroupedMove';
+import ChessMoveComment from './_components/ChessMoveComment/ChessMoveComment';
 
 type ChessMovesProps = {
-    moves: TChessMove[];
+    moveListId: number;
 };
 
-export default function ChessMoveSet({ moves }: ChessMovesProps) {
+export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
     const { addToMoveRefs, getMoveRef } = useMoveRefs();
+    const getMove = useGameStore((state) => state.moveStore.getMove);
+    const moves = useGameStore((state) => state.moveListStore.moveLists[moveListId]?.moves ?? []);
 
-    /** Groups moves into left (white) and right (black) with '...' for variations  */
     const groupedMoves = useMemo(() => {
         let groupId = 0;
-        return moves.reduce((acc: TGroupedMove[], move: TChessMove) => {
+        return moves.reduce((acc: TGroupedMove[], moveId: TChessMoveId) => {
+            const move = getMove(moveId);
+            if (!move) {
+                return acc;
+            }
             const { ply } = move;
             if (!acc[groupId]) {
                 acc[groupId] = {
@@ -42,30 +49,34 @@ export default function ChessMoveSet({ moves }: ChessMovesProps) {
 
             return acc;
         }, []);
-    }, [moves]);
+    }, [moves, getMove]);
 
     return (
         <div className="chess-moves w-full overflow-x-hidden overflow-y-auto">
             {groupedMoves.map((groupedMove, i) => (
-                <Stack key={i} gap={0}>
+                <Stack key={groupedMove.groupId} gap={0}>
                     <Group className="ml-2.5 rounded-sm" gap="xs">
                         <span className="text-right font-bold text-slate-400">{groupedMove.ply}.</span>
                         <div className="flex flex-1">
-                            <ChessMove move={groupedMove.left} isContinuation={!groupedMove.left} ref={addToMoveRefs(i, groupedMove.left)} />
                             <ChessMove
-                                move={groupedMove.right}
-                                isContinuation={!groupedMove.right && groupedMove.left?.nextMove !== undefined}
+                                moveId={groupedMove.left?.moveId}
+                                isContinuation={!groupedMove.left}
+                                ref={addToMoveRefs(i, groupedMove.left)}
+                            />
+                            <ChessMove
+                                moveId={groupedMove.right?.moveId}
+                                isContinuation={!groupedMove.right && groupedMove.left?.nextMoveId !== undefined}
                                 ref={addToMoveRefs(i, groupedMove.right)}
                             />
                         </div>
                     </Group>
-                    {groupedMove.comment && <ChessMoveComment attachedMoveRef={getMoveRef(i, groupedMove)}>{groupedMove.comment}</ChessMoveComment>}
-                    {groupedMove.ravs?.map((rav, ravIndex) => (
-                        <div className="my-2 ml-4 border-l border-slate-400 bg-slate-700" key={ravIndex}>
-                            {rav.comment && <ChessMoveComment>{rav.comment}</ChessMoveComment>}
-                            <ChessMoveSet moves={rav.moves} />
-                        </div>
-                    ))}
+                    {(groupedMove.right ?? groupedMove.left)?.comment && (
+                        <ChessMoveComment
+                            moveId={groupedMove.right?.moveId ?? groupedMove.left?.moveId}
+                            attachedMoveRef={getMoveRef(i, groupedMove)}
+                        />
+                    )}
+                    {groupedMove.ravs?.map((ravId) => <ChessMoveRavs ravId={ravId} key={ravId} />)}
                 </Stack>
             ))}
         </div>

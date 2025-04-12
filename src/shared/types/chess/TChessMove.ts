@@ -1,11 +1,11 @@
 import { Color, PieceSymbol, Square } from 'chess.js';
-import { ChessMoveLinkedList } from './ChessMoveLinkedList';
+import { TChessMoveId } from './TChessMoveId';
+import { TChessMoveListId } from './TChessMoveListId';
 
 export type TChessMove = {
-    moveId: number;
-    parent: ChessMoveLinkedList;
-    variationFrom?: TChessMove;
-    ravs?: ChessMoveLinkedList[];
+    moveId: TChessMoveId;
+    parentId: TChessMoveListId;
+    ravs?: TChessMoveListId[];
     ply: number;
     san: string;
     beforeFen: string;
@@ -26,6 +26,6 @@ export type TChessMove = {
     isKingsideCastle: boolean;
     isQueensideCastle: boolean;
     isBigPawn: boolean;
-    previousMove?: TChessMove;
-    nextMove?: TChessMove;
+    previousMoveId?: TChessMoveId;
+    nextMoveId?: TChessMoveId;
 };
