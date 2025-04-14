@@ -59,8 +59,9 @@ export const createMoveSlice: TImmerStateCreator<TMoveSlice> = (set, get) => ({
             isBigPawn: chessMove.isBigPawn(),
         };
         get().moveStore.addMove(generatedMove);
-        get().moveListStore.addMoveToList(parentId, generatedMove);
-        return generatedMove;
+        const move = get().moveStore.moves[generatedMove.moveId];
+        get().moveListStore.addMoveToList(parentId, move);
+        return move;
     },
     addMove: (move: TChessMove) =>
         set((state) => {
@@ -75,7 +76,11 @@ export const createMoveSlice: TImmerStateCreator<TMoveSlice> = (set, get) => ({
             state.moveStore.moves = {};
         }),
     selectMove: (moveId?: TChessMoveId) => {
-        const { getMove } = get().moveStore;
+        const { getMove, selectedMoveId } = get().moveStore;
+        if (moveId === selectedMoveId) {
+            return;
+        }
+
         const move = getMove(moveId);
         if (!move) {
             return;

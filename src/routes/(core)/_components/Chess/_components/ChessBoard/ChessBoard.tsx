@@ -1,47 +1,35 @@
-import { useHotkeys, useThrottledCallback } from '@mantine/hooks';
-import { IconChevronLeft, IconChevronRight, IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
-import useGameStore from '../../../../../../shared/stores/gameStore';
-import ChessSquare from './_components/ChessSquare/ChessSquare';
-import { EChessSquareType } from './_components/ChessSquare/types/EChessSquareType';
-import ChessSquarePiece from './_components/ChessSquare/ChessSquarePiece';
-import ChessSquareMove from './_components/ChessSquare/ChessSquareMove';
-import ChessSquareNag from './_components/ChessSquare/ChessSquareNag';
+import { useHotkeys } from '@mantine/hooks';
+import { useShallow } from 'zustand/react/shallow';
+import useGameStoreV2 from '../../../../../../shared/stores/gameStoreV2';
 import ChessBoardRanks from './_components/ChessBoardRanks/ChessBoardRanks';
 import ChessBoardFiles from './_components/ChessBoardFiles/ChessBoardFiles';
-import IconButtonAdapter from '@/shared/components/ButtonAdapter/IconButtonAdapter';
-import TablerIconAdapter from '@/shared/components/TablerIconAdapter/TablerIconAdapter';
+import ChessSquarePiece from './_components/ChessSquare/ChessSquarePiece';
+import ChessSquare from './_components/ChessSquare/ChessSquare';
+import ChessSquareMove from './_components/ChessSquare/ChessSquareMove';
+import ChessSquareNag from './_components/ChessSquare/ChessSquareNag';
+import { EChessSquareType } from './_components/ChessSquare/types/EChessSquareType';
 
 export default function ChessBoard() {
-    const {
-        getBoardPieces,
-        showFirstMove,
-        showPreviousMove,
-        showNextMove,
-        showLastMove,
-        currentTurn,
-        checkedSquare,
-        leaveVariation,
-        returnToVariation,
-        selectedPiece,
-        selectPiece,
-        movePiece,
-        possibleMoves,
-    } = useGameStore();
-    const selectedMove = useGameStore((state) => state.moveStore.selectedMove);
-    const isSquareChecked = checkedSquare();
-
-    const showFirstMoveThrottled = useThrottledCallback(showFirstMove, 50);
-    const showPreviousMoveThrottled = useThrottledCallback(showPreviousMove, 50);
-    const showNextMoveThrottled = useThrottledCallback(showNextMove, 50);
-    const showLastMoveThrottled = useThrottledCallback(showLastMove, 50);
+    const showFirstMove = useGameStoreV2((state) => state.showFirstMove);
+    const showPreviousMove = useGameStoreV2((state) => state.showPreviousMove);
+    const showNextMove = useGameStoreV2((state) => state.showNextMove);
+    const showLastMove = useGameStoreV2((state) => state.showLastMove);
+    const selectedMove = useGameStoreV2((state) => state.selectedMove());
+    const isSquareChecked = useGameStoreV2((state) => state.checkedSquare());
+    const boardPieces = useGameStoreV2(useShallow((state) => state.boardPieces()));
+    const possibleMoves = useGameStoreV2((state) => state.possibleMoves);
+    const currentTurn = useGameStoreV2((state) => state.currentTurn());
+    const selectedPiece = useGameStoreV2((state) => state.selectedPiece);
+    const selectPiece = useGameStoreV2((state) => state.selectPiece);
+    const movePiece = useGameStoreV2((state) => state.movePiece);
 
     useHotkeys([
-        ['ArrowUp', () => leaveVariation()],
-        ['ArrowDown', () => returnToVariation()],
-        ['Home', () => showFirstMoveThrottled()],
-        ['ArrowLeft', () => showPreviousMoveThrottled()],
-        ['ArrowRight', () => showNextMoveThrottled()],
-        ['End', () => showLastMoveThrottled()],
+        // ['ArrowUp', () => leaveVariation()],
+        // ['ArrowDown', () => returnToVariation()],
+        ['Home', () => showFirstMove()],
+        ['ArrowLeft', () => showPreviousMove()],
+        ['ArrowRight', () => showNextMove()],
+        ['End', () => showLastMove()],
     ]);
 
     return (
@@ -58,32 +46,18 @@ export default function ChessBoard() {
                 {selectedPiece && <ChessSquare square={selectedPiece?.square} type={EChessSquareType.SELECTED} />}
                 {isSquareChecked && <ChessSquare square={isSquareChecked} type={EChessSquareType.CHECKED} />}
                 {selectedMove && <ChessSquareNag />}
-                {getBoardPieces()?.map((piece) => (
+                {boardPieces?.map((piece) => (
                     <ChessSquarePiece
                         key={piece.square}
                         square={piece.square}
                         piece={piece}
-                        turn={currentTurn()}
+                        turn={currentTurn}
                         onPieceClick={() => selectPiece(piece)}
                     />
                 ))}
                 {possibleMoves.map((move) => (
                     <ChessSquareMove key={move.to} square={move.to} isCapturing={move.isCapture()} onMoveClick={() => movePiece(move)} />
                 ))}
-            </div>
-            <div className="mt-6 flex justify-end gap-x-2">
-                <IconButtonAdapter variant="filled" radius="sm" color="primary" size="sm" onClick={() => showFirstMove()}>
-                    <TablerIconAdapter icon={IconChevronsLeft} size={18} />
-                </IconButtonAdapter>
-                <IconButtonAdapter variant="filled" radius="sm" color="primary" size="sm" onClick={() => showPreviousMove()}>
-                    <TablerIconAdapter icon={IconChevronLeft} size={18} />
-                </IconButtonAdapter>
-                <IconButtonAdapter variant="filled" radius="sm" color="primary" size="sm" onClick={() => showNextMove()}>
-                    <TablerIconAdapter icon={IconChevronRight} size={18} />
-                </IconButtonAdapter>
-                <IconButtonAdapter variant="filled" radius="sm" color="primary" size="sm" onClick={() => showLastMove()}>
-                    <TablerIconAdapter icon={IconChevronsRight} size={18} />
-                </IconButtonAdapter>
             </div>
         </div>
     );

@@ -1,9 +1,10 @@
 import { Button, Group, Stack, Textarea } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
-import useGameStore from '../../../../shared/stores/gameStore';
+import useGameStoreV2 from '../../../../shared/stores/gameStoreV2';
+import ChessMoveSet from './_components/ChessMoveSet/ChessMoveSet';
 import ChessBoard from './_components/ChessBoard/ChessBoard';
-import ChessMoveSet from './_components/ChessHistory/ChessMoveSet';
+
 // const pgn1 = `
 // [Event "25th ch-EUR Indiv 2025"]
 // [Site "Eforie Nord ROU"]
@@ -35,18 +36,18 @@ import ChessMoveSet from './_components/ChessHistory/ChessMoveSet';
 // 60. Kf6 Rh4 61. h7+ Kh8 62. Kxe6 Rh6+ 63. Kd5 a3 64. Rxa3 Kxh7 65. Rg3 Rh1 66.
 // e6 Rd1+ 67. Kc6 Rc1+ 68. Kd7 Rd1+ 69. Ke8 Re1 70. e7 Re4 71. Rd3 Kg7 72. Kd7 1-0`;
 
-const pgn2 = `[Event "?"]
-[Site "?"]
-[Date "????.??.??"]
-[Round "?"]
-[White "?"]
-[Black "?"]
-[Result "*"]
-[Link "https://www.chess.com/analysis/library/4uNL5wDqzE?tab=analysis"]
+// const pgn2 = `[Event "?"]
+// [Site "?"]
+// [Date "????.??.??"]
+// [Round "?"]
+// [White "?"]
+// [Black "?"]
+// [Result "*"]
+// [Link "https://www.chess.com/analysis/library/4uNL5wDqzE?tab=analysis"]
 
-1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. d3 Bc5 5. O-O {comment after} d6 6. c3 (6. Re1 Ng4 7. Re2 O-O
-({comment before} 7... Be6 {comment after} 8. Ng5 (8. h3 {comment after}))) 6... O-O 7. Re1 a5
-8. Bb5 Bd7 *`;
+// 1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. d3 Bc5 5. O-O {comment after} d6 6. c3 (6. Re1 Ng4 7. Re2 O-O
+// ({comment before} 7... Be6 {comment after} 8. Ng5 (8. h3 {comment after}))) 6... O-O 7. Re1 a5
+// 8. Bb5 Bd7 *`;
 
 const pgn3 = `[Event "Wch1"]
 [Site "U.S.A."]
@@ -116,13 +117,9 @@ score had become 4-4. The match continued in New Orleans.} 0-1`;
 export default function Chess() {
     const [pgn, setPgn] = useState('');
 
-    const chess = useGameStore((state) => state.chess);
-    const loadGame = useGameStore((state) => state.loadGame);
-    const firstMoveList = useGameStore((state) => state.moveListStore.moveLists[1]);
-
-    useEffect(() => {
-        console.log('effect', chess);
-    }, [chess]);
+    const loadGame = useGameStoreV2((state) => state.load);
+    const getFirstMoveList = useGameStoreV2((state) => state.getFirstMoveList);
+    const board = useGameStoreV2((state) => state.board);
 
     const form = useForm({
         initialValues: {
@@ -147,14 +144,12 @@ export default function Chess() {
                     </Button>
                 </Stack>
             </form>
-            {pgn && (
+            {pgn && board && (
                 <Group align="center">
                     <ChessBoard />
-                    {firstMoveList?.moveListId && (
-                        <div className="max-h-[600px] w-[512px] overflow-auto rounded bg-slate-800">
-                            <ChessMoveSet moveListId={firstMoveList.moveListId} />
-                        </div>
-                    )}
+                    <div className="max-h-[512px] w-[512px] overflow-auto rounded bg-slate-800">
+                        <ChessMoveSet moveListId={getFirstMoveList().moveListId} />
+                    </div>
                 </Group>
             )}
         </Stack>

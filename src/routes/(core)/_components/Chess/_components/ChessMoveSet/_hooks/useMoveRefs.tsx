@@ -1,9 +1,9 @@
 import { useRef } from 'react';
-import type { TGroupedMove } from '../_types/TGroupedMove';
 import type { TChessMove } from '../../../../../../../shared/types/chess/TChessMove';
+import type { TGroupedMove } from '../_types/TGroupedMove';
 
 export default function useMoveRefs() {
-    const moveRefs = useRef<Map<string, HTMLElement>>(null);
+    const moveRefs = useRef<Map<number, HTMLElement>>(null);
 
     const getMoveRefsMap = () => {
         if (!moveRefs.current) {
@@ -12,24 +12,23 @@ export default function useMoveRefs() {
         return moveRefs.current;
     };
 
-    const addToMoveRefs = (i: number, move?: TChessMove) => (node: HTMLElement) => {
+    const addToMoveRefs = (move?: TChessMove) => (node: HTMLElement) => {
         if (move) {
             const map = getMoveRefsMap();
-            const key = i + move.color;
-            map.set(key, node);
+            map.set(move.moveId, node);
 
             return () => {
-                map.delete(key);
+                map.delete(move.moveId);
             };
         }
         return () => {};
     };
 
-    const getMoveRef = (i: number, groupedMove: TGroupedMove) => {
+    const getMoveRef = (groupedMove?: TGroupedMove) => {
         const map = getMoveRefsMap();
-        const color = groupedMove.right?.color ?? groupedMove.left?.color;
-        if (color) {
-            return map.get(i + color);
+        const { moveId } = groupedMove?.right ?? groupedMove?.left ?? {};
+        if (moveId) {
+            return map.get(moveId);
         }
         return undefined;
     };

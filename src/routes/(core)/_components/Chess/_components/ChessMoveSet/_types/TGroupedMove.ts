@@ -8,4 +8,5 @@ export type TGroupedMove = {
     right?: TChessMove;
     ravs?: TChessMoveListId[];
     comment?: string;
+    commentRef?: HTMLElement;
 };

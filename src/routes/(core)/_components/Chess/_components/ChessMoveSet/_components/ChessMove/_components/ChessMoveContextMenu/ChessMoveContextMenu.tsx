@@ -4,27 +4,25 @@ import { useMemo } from 'react';
 import MenuItemAdapter from '../../../../../../../../../../shared/components/MenuItemAdapter/MenuItemAdapter';
 import TablerIconAdapter from '../../../../../../../../../../shared/components/TablerIconAdapter/TablerIconAdapter';
 import type { TChessMove } from '../../../../../../../../../../shared/types/chess/TChessMove';
-import useGameStore from '../../../../../../../../../../shared/stores/gameStore';
+import useGameStoreV2 from '../../../../../../../../../../shared/stores/gameStoreV2';
 
 type ChessMoveContextMenuProps = {
     move: TChessMove;
 };
 
 export default function ChessMoveContextMenu({ move }: ChessMoveContextMenuProps) {
-    const {
-        moveStore: { addComment },
-    } = useGameStore();
+    const setMoveComment = useGameStoreV2((state) => state.setMoveComment);
 
     const commentButton = useMemo(() => {
         const text: string = move?.comment ? 'Remove comment' : 'Add comment';
-        const action = () => addComment(move.moveId, move.comment ? undefined : 'New comment');
+        const action = () => setMoveComment(move.moveId, move.comment ? undefined : 'New comment');
 
         return (
             <MenuItemAdapter leftSection={<TablerIconAdapter icon={IconMessageFilled} />} onClick={action}>
                 {text}
             </MenuItemAdapter>
         );
-    }, [move, addComment]);
+    }, [move, setMoveComment]);
 
     return (
         <Stack className="w-full" gap={0}>

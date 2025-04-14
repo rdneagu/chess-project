@@ -4,7 +4,7 @@ import { Group, Menu } from '@mantine/core';
 import { mergeRefs } from '@mantine/hooks';
 import { getChessPieceClass } from '../../../../../../../../shared/util/ChessUtil';
 import { TReactWrapper } from '../../../../../../../../shared/types/react/TReactWrapper';
-import useGameStore from '../../../../../../../../shared/stores/gameStore';
+import useGameStoreV2 from '../../../../../../../../shared/stores/gameStoreV2';
 import ChessMoveNag from './_components/ChessMoveNag/ChessMoveNag';
 import ChessMoveContextMenu from './_components/ChessMoveContextMenu/ChessMoveContextMenu';
 import { TChessPiece } from '@/shared/types/chess/TChessPiece';
@@ -18,12 +18,13 @@ type ChessMoveProps = {
 } & Partial<TReactWrapper>;
 
 export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProps) {
-    const move = useGameStore((state) => state.moveStore.moves[moveId ?? 0]);
-    const selectMove = useGameStore((state) => state.moveStore.selectMove);
-    const selectedMoveId = useGameStore((state) => state.moveStore.selectedMoveId);
+    const move = useGameStoreV2((state) => (moveId ? state.moves[moveId] : undefined));
+    const selectMove = useGameStoreV2((state) => state.selectMove);
+    const selectedMove = useGameStoreV2((state) => state.selectedMove());
+    const scrolledMoveId = useGameStoreV2((state) => state.scrolledMoveId);
+    const setScrolledMoveId = useGameStoreV2((state) => state.setScrolledMoveId);
 
     const [contextMenuOpened, setContextMenuOpened] = useState(false);
-
     const moveRef = useRef<HTMLDivElement>(null);
 
     const moveText = useMemo(() => {
@@ -35,14 +36,15 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
     }, [isContinuation, move]);
 
     const piece = useMemo<TChessPiece | undefined>(() => {
-        if (move) {
-            return {
-                type: move.piece,
-                color: move.color,
-                square: move.from,
-            };
+        if (!move) {
+            return undefined;
         }
-        return undefined;
+
+        return {
+            type: move.piece,
+            color: move.color,
+            square: move.from,
+        };
     }, [move]);
 
     const onContextMenu = useCallback((ev: MouseEvent) => {
@@ -58,10 +60,11 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
     }, [move]);
 
     useEffect(() => {
-        if (selectedMoveId === moveId) {
+        if (scrolledMoveId && scrolledMoveId === moveId) {
             moveRef.current?.scrollIntoView({ block: 'center' });
+            setScrolledMoveId(undefined);
         }
-    }, [selectedMoveId, moveId, moveRef]);
+    }, [scrolledMoveId, moveId, setScrolledMoveId]);
 
     return (
         <div className="move my-0.5 flex flex-1" ref={mergeRefs(ref, moveRef)}>
@@ -71,7 +74,7 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
                         gap={0}
                         className={clsx('my-0.5 flex rounded py-0.5 pr-2 pl-0.5 text-center select-none', {
                             'cursor-pointer hover:bg-slate-400/15': move !== undefined,
-                            '!bg-slate-400/30': selectedMoveId && selectedMoveId === moveId,
+                            '!bg-slate-400/30': selectedMove && selectedMove.moveId === moveId,
                             'font-bold': moveNag,
                         })}
                         style={{ color: moveNag?.color ?? 'inherit' }}
