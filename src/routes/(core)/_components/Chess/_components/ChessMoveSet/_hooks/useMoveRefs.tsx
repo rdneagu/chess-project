@@ -1,9 +1,8 @@
-import { useRef } from 'react';
 import type { TChessMove } from '../../../../../../../shared/types/chess/TChessMove';
-import type { TGroupedMove } from '../_types/TGroupedMove';
+import { useShallowGameStoreV2 } from '@/shared/stores/gameStoreV2';
 
 export default function useMoveRefs() {
-    const moveRefs = useRef<Map<number, HTMLElement>>(null);
+    const moveRefs = useShallowGameStoreV2((state) => state.moveRefs);
 
     const getMoveRefsMap = () => {
         if (!moveRefs.current) {
@@ -13,20 +12,17 @@ export default function useMoveRefs() {
     };
 
     const addToMoveRefs = (move?: TChessMove) => (node: HTMLElement) => {
-        if (move) {
-            const map = getMoveRefsMap();
-            map.set(move.moveId, node);
+        const moveId = move?.moveId ?? 0;
+        const map = getMoveRefsMap();
+        map.set(moveId, node);
 
-            return () => {
-                map.delete(move.moveId);
-            };
-        }
-        return () => {};
+        return () => {
+            map.delete(moveId);
+        };
     };
 
-    const getMoveRef = (groupedMove?: TGroupedMove) => {
+    const getMoveRef = (moveId?: number) => {
         const map = getMoveRefsMap();
-        const { moveId } = groupedMove?.right ?? groupedMove?.left ?? {};
         if (moveId) {
             return map.get(moveId);
         }

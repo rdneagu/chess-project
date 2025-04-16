@@ -2,6 +2,7 @@ import { Chess, KING, type Color, type Move, type Square } from 'chess.js';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { useShallow } from 'zustand/react/shallow';
+import { createRef, RefObject } from 'react';
 import type { TChessBoard } from '../types/chess/TChessBoard';
 import type { TChessMove } from '../types/chess/TChessMove';
 import type { TChessMoveList } from '../types/chess/TChessMoveList';
@@ -24,9 +25,10 @@ export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]
         firstMoveListId: undefined,
         board: undefined,
         selectedMoveId: undefined,
-        scrolledMoveId: undefined,
         selectedPiece: undefined,
         possibleMoves: [],
+        moveRefs: createRef<Map<TChessMoveId, HTMLElement>>(),
+        scrolledMoveId: undefined,
 
         currentTurn: () => get().chess.turn(),
 
@@ -164,13 +166,14 @@ export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]
         },
 
         selectMove: (moveId?: TChessMoveId): void => {
-            set(() => ({ selectedMoveId: moveId, scrolledMoveId: moveId }));
+            set(() => ({ selectedMoveId: moveId }));
             if (!moveId) {
                 return;
             }
             const move = get().moves[moveId];
             get().chess.load(move.afterFen);
             get().updateChessBoard();
+            get().deselectPiece();
         },
 
         showNextMove: (): void => {
@@ -268,15 +271,16 @@ export const useShallowGameStoreV2: <T>(selector: (state: TGameStoreV2) => T) =>
 type TGameStoreV2 = {
     chess: Chess;
 
-    moveLists: Record<number, TChessMoveList>;
-    moves: Record<number, TChessMove>;
+    moveLists: Record<TChessMoveListId, TChessMoveList>;
+    moves: Record<TChessMoveId, TChessMove>;
 
     board?: TChessBoard;
-    selectedMoveId?: number;
-    scrolledMoveId?: number;
+    selectedMoveId?: TChessMoveId;
     selectedPiece?: TChessPiece;
     possibleMoves: Move[];
-    firstMoveListId?: number;
+    firstMoveListId?: TChessMoveListId;
+    moveRefs: RefObject<Map<TChessMoveId, HTMLElement>>;
+    scrolledMoveId: TChessMoveId | undefined;
 
     currentTurn: () => Color;
     boardPieces: () => TChessPiece[];

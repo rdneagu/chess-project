@@ -59,9 +59,9 @@ export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
     }, [moveList, moves]);
 
     return (
-        <div className="chess-moves w-full overflow-x-hidden overflow-y-auto">
+        <div className="chess-moves w-full overflow-x-hidden">
             {groupedMoves?.map((groupedMove) => (
-                <Stack key={`${groupedMove.left?.moveId}${groupedMove.left?.color}-${groupedMove.right?.moveId}${groupedMove.right?.color}`} gap={0}>
+                <Stack key={groupedMove.right?.moveId ?? groupedMove.left?.moveId ?? groupedMove.groupId} gap={0}>
                     <Group className="ml-2.5 rounded-sm" gap="xs">
                         <span className="text-right font-bold text-slate-400">{groupedMove.ply}.</span>
                         <div className="flex flex-1">
@@ -73,7 +73,11 @@ export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
                             />
                         </div>
                     </Group>
-                    {groupedMove.comment && <ChessMoveComment attachedMoveRef={getMoveRef(groupedMove)}>{groupedMove.comment}</ChessMoveComment>}
+                    {groupedMove.comment && (
+                        <ChessMoveComment attachedMoveRef={getMoveRef(groupedMove.right?.moveId ?? groupedMove.left?.moveId)}>
+                            {groupedMove.comment}
+                        </ChessMoveComment>
+                    )}
                     {groupedMove.ravs?.map((ravId) => <ChessMoveRavs ravId={ravId} key={ravId} />)}
                 </Stack>
             ))}

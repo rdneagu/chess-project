@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useMemo, useRef, useState, MouseEvent, useEffect } from 'react';
+import { useCallback, useMemo, useRef, useState, MouseEvent } from 'react';
 import { Group, Menu } from '@mantine/core';
 import { mergeRefs } from '@mantine/hooks';
 import { getChessPieceClass } from '../../../../../../../../shared/util/ChessUtil';
@@ -59,15 +59,17 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
         return undefined;
     }, [move]);
 
-    useEffect(() => {
-        if (selectedMove && selectedMove.moveId === moveId) {
-            moveRef.current?.scrollIntoView({ block: 'center' });
-        }
-    }, [selectedMove, moveId]);
+    // FIXME: This is causing a re-render, creating UI lag, need a way to scroll to current move without the world ending
+    // useEffect(() => {
+    //     if (selectedMove && selectedMove?.moveId !== scrolledMoveId) {
+    //         setScrolledMoveId(selectedMove.moveId);
+    //         moveRef.current?.scrollIntoView({ block: 'center' });
+    //     }
+    // }, [selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="move my-0.5 flex flex-1" ref={mergeRefs(ref, moveRef)}>
-            <Menu opened={contextMenuOpened} onDismiss={() => setContextMenuOpened(false)}>
+            <Menu opened={contextMenuOpened} onClose={() => setContextMenuOpened(false)}>
                 <Menu.Target>
                     <Group
                         gap={0}
