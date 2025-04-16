@@ -1,4 +1,14 @@
-.arrow {
+@import 'tailwindcss';
+
+.chess-comment:hover,
+.chess-comment:focus-within {
+    .comment-arrow,
+    .comment-textarea {
+        @apply bg-slate-500 transition-colors;
+    }
+}
+
+.comment-arrow {
     top: -7px;
     height: 7px;
     aspect-ratio: 2;

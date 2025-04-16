@@ -73,10 +73,11 @@ export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
                             />
                         </div>
                     </Group>
-                    {groupedMove.comment && (
-                        <ChessMoveComment attachedMoveRef={getMoveRef(groupedMove.right?.moveId ?? groupedMove.left?.moveId)}>
-                            {groupedMove.comment}
-                        </ChessMoveComment>
+                    {groupedMove.comment !== undefined && (
+                        <ChessMoveComment
+                            attachedMoveRef={getMoveRef(groupedMove.right?.moveId ?? groupedMove.left?.moveId)}
+                            comment={groupedMove.comment}
+                        />
                     )}
                     {groupedMove.ravs?.map((ravId) => <ChessMoveRavs ravId={ravId} key={ravId} />)}
                 </Stack>

@@ -1,16 +1,18 @@
 import clsx from 'clsx';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import './ChessMoveComment.css';
-import { TReactWrapper } from '../../../../../../../../shared/types/react/TReactWrapper';
 
 type ChessMoveCommentProps = {
     attachedMoveRef?: HTMLElement;
-    children: ReactNode;
-} & TReactWrapper;
+    comment?: string;
+};
 
-export default function ChessMoveComment({ attachedMoveRef, children }: ChessMoveCommentProps) {
+export default function ChessMoveComment({ attachedMoveRef, comment }: ChessMoveCommentProps) {
     const commentRef = useRef<HTMLDivElement | null>(null);
     const [arrowOffset, setArrowOffset] = useState<string>();
+
+    const [commentValue, setCommentValue] = useState(comment);
+    const editableRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         const moveElement = attachedMoveRef;
@@ -23,10 +25,36 @@ export default function ChessMoveComment({ attachedMoveRef, children }: ChessMov
         }
     }, [attachedMoveRef]);
 
+    useEffect(() => {
+        if (editableRef.current) {
+            editableRef.current.focus();
+        }
+    }, [editableRef]);
+
+    useEffect(() => {
+        if (comment && editableRef.current) {
+            editableRef.current.innerText = comment;
+        }
+    }, [comment]);
+
+    const onBlur = useCallback(() => {
+        console.log(commentValue);
+    }, [commentValue]);
+
+    const onInput = useCallback((event: FormEvent<HTMLDivElement>) => {
+        setCommentValue(event.currentTarget.innerText);
+    }, []);
+
     return (
-        <div className={clsx('relative bg-slate-600 px-2 py-1 text-sm', { 'mt-2': attachedMoveRef })} ref={commentRef}>
-            {attachedMoveRef && <div className="arrow absolute bg-gray-600" style={{ left: arrowOffset }} />}
-            {children}
+        <div className={clsx('chess-comment relative flex bg-slate-600 text-sm', { 'mt-2': attachedMoveRef })} ref={commentRef}>
+            {attachedMoveRef && <div className="comment-arrow absolute bg-gray-600" style={{ left: arrowOffset }} />}
+            <div
+                contentEditable
+                ref={editableRef}
+                onBlur={() => onBlur()}
+                onInput={(event) => onInput(event)}
+                className="comment-textarea max-h-22 flex-1 overflow-y-auto px-2 py-1 outline-none"
+            />
         </div>
     );
 }

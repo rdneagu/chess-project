@@ -16,7 +16,7 @@ export default function ChessMoveRavs({ ravId }: ChessMoveRavsProps) {
 
     return (
         <div className="my-2 ml-4 border-l border-slate-400 bg-slate-700">
-            {rav.comment && <ChessMoveComment>{rav.comment}</ChessMoveComment>}
+            {rav.comment && <ChessMoveComment comment={rav.comment} />}
             <ChessMoveSet moveListId={rav.moveListId} />
         </div>
     );
