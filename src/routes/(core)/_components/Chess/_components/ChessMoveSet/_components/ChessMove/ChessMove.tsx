@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useEffect, useMemo, useRef, useState, MouseEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, MouseEvent, useEffect } from 'react';
 import { Group, Menu } from '@mantine/core';
 import { mergeRefs } from '@mantine/hooks';
 import { getChessPieceClass } from '../../../../../../../../shared/util/ChessUtil';
@@ -11,7 +11,6 @@ import { TChessPiece } from '@/shared/types/chess/TChessPiece';
 import './ChessMove.css';
 import { CHESS_NAG_MAP } from '@/shared/types/chess/constants/Chess';
 import { EChessNag } from '@/shared/types/chess/EChessNag';
-import useRerenderCount from '@/shared/hooks/useRerenderCount';
 
 type ChessMoveProps = {
     moveId?: number;
@@ -22,10 +21,8 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
     const move = useShallowGameStoreV2((state) => (moveId ? state.moves[moveId] : undefined));
     const selectMove = useShallowGameStoreV2((state) => state.selectMove);
     const selectedMove = useShallowGameStoreV2((state) => state.selectedMove());
-    const scrolledMoveId = useShallowGameStoreV2((state) => state.scrolledMoveId);
-    const setScrolledMoveId = useShallowGameStoreV2((state) => state.setScrolledMoveId);
 
-    useRerenderCount(`ChessMove ${moveId}`);
+    // useRerenderCount(`ChessMove ${moveId}`);
 
     const [contextMenuOpened, setContextMenuOpened] = useState(false);
     const moveRef = useRef<HTMLDivElement>(null);
@@ -63,11 +60,10 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
     }, [move]);
 
     useEffect(() => {
-        if (scrolledMoveId && scrolledMoveId === moveId) {
+        if (selectedMove && selectedMove.moveId === moveId) {
             moveRef.current?.scrollIntoView({ block: 'center' });
-            setScrolledMoveId(undefined);
         }
-    }, [scrolledMoveId, moveId, setScrolledMoveId]);
+    }, [selectedMove, moveId]);
 
     return (
         <div className="move my-0.5 flex flex-1" ref={mergeRefs(ref, moveRef)}>

@@ -7,7 +7,6 @@ import ChessMoveRavs from './_components/ChessMoveRavs/ChessMoveRavs'; // eslint
 import useMoveRefs from './_hooks/useMoveRefs';
 import ChessMove from './_components/ChessMove/ChessMove';
 
-import useRerenderCount from '@/shared/hooks/useRerenderCount';
 import { useShallowGameStoreV2 } from '@/shared/stores/gameStoreV2';
 
 type ChessMovesProps = {
@@ -20,7 +19,7 @@ export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
     const moveList = useShallowGameStoreV2((state) => state.moveLists[moveListId]);
     const moves = useShallowGameStoreV2((state) => state.moves);
 
-    useRerenderCount(`ChessMoveSet ${moveListId}`);
+    // useRerenderCount(`ChessMoveSet ${moveListId}`);
 
     const groupedMoves = useMemo(() => {
         if (!moveList?.moves) {

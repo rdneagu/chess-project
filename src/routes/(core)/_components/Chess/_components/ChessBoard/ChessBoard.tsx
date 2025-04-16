@@ -7,7 +7,6 @@ import ChessSquare from './_components/ChessSquare/ChessSquare';
 import ChessSquareMove from './_components/ChessSquare/ChessSquareMove';
 import ChessSquareNag from './_components/ChessSquare/ChessSquareNag';
 import { EChessSquareType } from './_components/ChessSquare/types/EChessSquareType';
-import useRerenderCount from '@/shared/hooks/useRerenderCount';
 
 export default function ChessBoard() {
     const showFirstMove = useShallowGameStoreV2((state) => state.showFirstMove);
@@ -23,7 +22,7 @@ export default function ChessBoard() {
     const selectPiece = useShallowGameStoreV2((state) => state.selectPiece);
     const movePiece = useShallowGameStoreV2((state) => state.movePiece);
 
-    useRerenderCount(`ChessBoard`);
+    // useRerenderCount(`ChessBoard`);
 
     useHotkeys([
         // ['ArrowUp', () => leaveVariation()],

@@ -4,7 +4,6 @@ import { useForm } from '@mantine/form';
 import { useShallowGameStoreV2 } from '../../../../shared/stores/gameStoreV2';
 import ChessMoveSet from './_components/ChessMoveSet/ChessMoveSet';
 import ChessBoard from './_components/ChessBoard/ChessBoard';
-import useRerenderCount from '@/shared/hooks/useRerenderCount';
 
 // const pgn1 = `
 // [Event "25th ch-EUR Indiv 2025"]
@@ -127,7 +126,7 @@ export default function Chess() {
         },
     });
 
-    useRerenderCount(`Chess`);
+    // useRerenderCount(`Chess`);
 
     useEffect(() => {
         if (pgn) {
