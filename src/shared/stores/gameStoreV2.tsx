@@ -28,7 +28,6 @@ export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]
         selectedPiece: undefined,
         possibleMoves: [],
         moveRefs: createRef<Map<TChessMoveId, HTMLElement>>(),
-        scrolledMoveId: undefined,
 
         currentTurn: () => get().chess.turn(),
 
@@ -57,7 +56,7 @@ export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]
 
         reset: () => {
             get().chess.reset();
-            set(() => ({ moveLists: {}, moves: {}, firstMoveListId: undefined, scrolledMoveId: undefined }));
+            set(() => ({ moveLists: {}, moves: {}, firstMoveListId: undefined }));
             get().updateChessBoard();
         },
 
@@ -224,10 +223,6 @@ export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]
             set((state) => ({ moves: { ...state.moves, [moveId]: { ...state.moves[moveId], comment } } }));
         },
 
-        setScrolledMoveId: (moveId?: TChessMoveId): void => {
-            set(() => ({ scrolledMoveId: moveId }));
-        },
-
         selectPiece: (piece: TChessPiece): void => {
             const selectedPiece = !get().selectedPiece || get().selectedPiece?.square !== piece.square ? piece : undefined;
             const possibleMoves = selectedPiece ? get().chess.moves({ square: selectedPiece.square, verbose: true }) : [];
@@ -280,7 +275,6 @@ type TGameStoreV2 = {
     possibleMoves: Move[];
     firstMoveListId?: TChessMoveListId;
     moveRefs: RefObject<Map<TChessMoveId, HTMLElement>>;
-    scrolledMoveId: TChessMoveId | undefined;
 
     currentTurn: () => Color;
     boardPieces: () => TChessPiece[];
@@ -303,7 +297,6 @@ type TGameStoreV2 = {
     showLastMove: () => void;
     setMoveListComment: (moveListId: TChessMoveListId, comment?: string) => void;
     setMoveComment: (moveId: TChessMoveId, comment?: string) => void;
-    setScrolledMoveId: (moveId?: TChessMoveId) => void;
     selectPiece: (piece: TChessPiece) => void;
     deselectPiece: () => void;
     movePiece: (move: Move) => void;

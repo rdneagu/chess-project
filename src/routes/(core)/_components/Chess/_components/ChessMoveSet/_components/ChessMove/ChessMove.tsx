@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useMemo, useRef, useState, MouseEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, MouseEvent, useEffect } from 'react';
 import { Group, Menu } from '@mantine/core';
 import { mergeRefs } from '@mantine/hooks';
 import { getChessPieceClass } from '../../../../../../../../shared/util/ChessUtil';
@@ -23,6 +23,7 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
     const selectedMove = useShallowGameStoreV2((state) => state.selectedMove());
 
     // useRerenderCount(`ChessMove ${moveId}`);
+    const hasScrolled = useRef(false);
 
     const [contextMenuOpened, setContextMenuOpened] = useState(false);
     const moveRef = useRef<HTMLDivElement>(null);
@@ -59,13 +60,15 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
         return undefined;
     }, [move]);
 
-    // FIXME: This is causing a re-render, creating UI lag, need a way to scroll to current move without the world ending
-    // useEffect(() => {
-    //     if (selectedMove && selectedMove?.moveId !== scrolledMoveId) {
-    //         setScrolledMoveId(selectedMove.moveId);
-    //         moveRef.current?.scrollIntoView({ block: 'center' });
-    //     }
-    // }, [selectedMove]); // eslint-disable-line react-hooks/exhaustive-deps
+    // FIXME: Perhaps find a better way to handle this?
+    useEffect(() => {
+        if (selectedMove?.moveId === moveId && !hasScrolled.current) {
+            moveRef.current?.scrollIntoView({ block: 'center' });
+            hasScrolled.current = true;
+        } else {
+            hasScrolled.current = false;
+        }
+    }, [selectedMove, moveId]);
 
     return (
         <div className="move my-0.5 flex flex-1" ref={mergeRefs(ref, moveRef)}>
