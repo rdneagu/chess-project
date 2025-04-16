@@ -55,7 +55,7 @@ export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]
 
         reset: () => {
             get().chess.reset();
-            set((state) => ({ moveLists: {}, moves: {}, firstMoveListId: undefined, scrolledMoveId: undefined }));
+            set(() => ({ moveLists: {}, moves: {}, firstMoveListId: undefined, scrolledMoveId: undefined }));
             get().updateChessBoard();
         },
 

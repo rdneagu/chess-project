@@ -11,6 +11,7 @@ import { TChessPiece } from '@/shared/types/chess/TChessPiece';
 import './ChessMove.css';
 import { CHESS_NAG_MAP } from '@/shared/types/chess/constants/Chess';
 import { EChessNag } from '@/shared/types/chess/EChessNag';
+import useRerenderCount from '@/shared/hooks/useRerenderCount';
 
 type ChessMoveProps = {
     moveId?: number;
@@ -23,6 +24,8 @@ export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProp
     const selectedMove = useShallowGameStoreV2((state) => state.selectedMove());
     const scrolledMoveId = useShallowGameStoreV2((state) => state.scrolledMoveId);
     const setScrolledMoveId = useShallowGameStoreV2((state) => state.setScrolledMoveId);
+
+    useRerenderCount(`ChessMove ${moveId}`);
 
     const [contextMenuOpened, setContextMenuOpened] = useState(false);
     const moveRef = useRef<HTMLDivElement>(null);
