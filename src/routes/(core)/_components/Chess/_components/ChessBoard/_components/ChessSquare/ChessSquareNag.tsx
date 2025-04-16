@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 import clsx from 'clsx';
-import useGameStoreV2 from '../../../../../../../../shared/stores/gameStoreV2';
 import ChessSquare from './ChessSquare';
 import { EChessNag } from '@/shared/types/chess/EChessNag';
 import { CHESS_NAG_MAP } from '@/shared/types/chess/constants/Chess';
+import { useShallowGameStoreV2 } from '@/shared/stores/gameStoreV2';
 
 export default function ChessSquareNag() {
-    const selectedMove = useGameStoreV2((state) => state.selectedMove());
+    const selectedMove = useShallowGameStoreV2((state) => state.selectedMove());
 
     const moveNag = useMemo(() => {
         if (selectedMove) {

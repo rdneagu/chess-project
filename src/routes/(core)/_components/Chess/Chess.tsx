@@ -1,9 +1,10 @@
 import { Button, Group, Stack, Textarea } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
-import useGameStoreV2 from '../../../../shared/stores/gameStoreV2';
+import { useShallowGameStoreV2 } from '../../../../shared/stores/gameStoreV2';
 import ChessMoveSet from './_components/ChessMoveSet/ChessMoveSet';
 import ChessBoard from './_components/ChessBoard/ChessBoard';
+import useRerenderCount from '@/shared/hooks/useRerenderCount';
 
 // const pgn1 = `
 // [Event "25th ch-EUR Indiv 2025"]
@@ -47,7 +48,7 @@ import ChessBoard from './_components/ChessBoard/ChessBoard';
 
 // 1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. d3 Bc5 5. O-O {comment after} d6 6. c3 (6. Re1 Ng4 7. Re2 O-O
 // ({comment before} 7... Be6 {comment after} 8. Ng5 (8. h3 {comment after}))) 6... O-O 7. Re1 a5
-// 8. Bb5 Bd7 *`;
+// // 8. Bb5 Bd7 *`;
 
 const pgn3 = `[Event "Wch1"]
 [Site "U.S.A."]
@@ -117,15 +118,16 @@ score had become 4-4. The match continued in New Orleans.} 0-1`;
 export default function Chess() {
     const [pgn, setPgn] = useState('');
 
-    const loadGame = useGameStoreV2((state) => state.load);
-    const getFirstMoveList = useGameStoreV2((state) => state.getFirstMoveList);
-    const board = useGameStoreV2((state) => state.board);
+    const loadGame = useShallowGameStoreV2((state) => state.load);
+    const firstMoveListId = useShallowGameStoreV2((state) => state.firstMoveListId);
 
     const form = useForm({
         initialValues: {
             pgn: pgn3,
         },
     });
+
+    useRerenderCount(`Chess`);
 
     useEffect(() => {
         if (pgn) {
@@ -144,11 +146,11 @@ export default function Chess() {
                     </Button>
                 </Stack>
             </form>
-            {pgn && board && (
+            {firstMoveListId && (
                 <Group align="center">
                     <ChessBoard />
                     <div className="max-h-[512px] w-[512px] overflow-auto rounded bg-slate-800">
-                        <ChessMoveSet moveListId={getFirstMoveList().moveListId} />
+                        <ChessMoveSet moveListId={firstMoveListId} />
                     </div>
                 </Group>
             )}

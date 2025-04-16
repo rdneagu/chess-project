@@ -1,14 +1,14 @@
 import ChessMoveSet from '../../ChessMoveSet'; // eslint-disable-line import/no-cycle
 import { TChessMoveListId } from '../../../../../../../../shared/types/chess/TChessMoveListId';
-import useGameStoreV2 from '../../../../../../../../shared/stores/gameStoreV2';
 import ChessMoveComment from '../ChessMoveComment/ChessMoveComment';
+import { useShallowGameStoreV2 } from '@/shared/stores/gameStoreV2';
 
 type ChessMoveRavsProps = {
     ravId: TChessMoveListId;
 };
 
 export default function ChessMoveRavs({ ravId }: ChessMoveRavsProps) {
-    const rav = useGameStoreV2((state) => state.moveLists[ravId]);
+    const rav = useShallowGameStoreV2((state) => state.moveLists[ravId]);
 
     if (!rav) {
         return null;

@@ -1,12 +1,14 @@
 import { Group, Stack } from '@mantine/core';
 import { useMemo } from 'react';
 import { TChessMoveId } from '../../../../../../shared/types/chess/TChessMoveId';
-import useGameStoreV2 from '../../../../../../shared/stores/gameStoreV2';
-import ChessMove from './_components/ChessMove/ChessMove';
 import ChessMoveComment from './_components/ChessMoveComment/ChessMoveComment';
 import { TGroupedMove } from './_types/TGroupedMove';
 import ChessMoveRavs from './_components/ChessMoveRavs/ChessMoveRavs'; // eslint-disable-line import/no-cycle
 import useMoveRefs from './_hooks/useMoveRefs';
+import ChessMove from './_components/ChessMove/ChessMove';
+
+import useRerenderCount from '@/shared/hooks/useRerenderCount';
+import { useShallowGameStoreV2 } from '@/shared/stores/gameStoreV2';
 
 type ChessMovesProps = {
     moveListId: number;
@@ -15,8 +17,10 @@ type ChessMovesProps = {
 export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
     const { addToMoveRefs, getMoveRef } = useMoveRefs();
 
-    const moveList = useGameStoreV2((state) => state.moveLists[moveListId]);
-    const moves = useGameStoreV2((state) => state.moves);
+    const moveList = useShallowGameStoreV2((state) => state.moveLists[moveListId]);
+    const moves = useShallowGameStoreV2((state) => state.moves);
+
+    useRerenderCount(`ChessMoveSet ${moveListId}`);
 
     const groupedMoves = useMemo(() => {
         if (!moveList?.moves) {
@@ -58,7 +62,7 @@ export default function ChessMoveSet({ moveListId }: ChessMovesProps) {
     return (
         <div className="chess-moves w-full overflow-x-hidden overflow-y-auto">
             {groupedMoves?.map((groupedMove) => (
-                <Stack key={groupedMove.groupId} gap={0}>
+                <Stack key={`${groupedMove.left?.moveId}${groupedMove.left?.color}-${groupedMove.right?.moveId}${groupedMove.right?.color}`} gap={0}>
                     <Group className="ml-2.5 rounded-sm" gap="xs">
                         <span className="text-right font-bold text-slate-400">{groupedMove.ply}.</span>
                         <div className="flex flex-1">

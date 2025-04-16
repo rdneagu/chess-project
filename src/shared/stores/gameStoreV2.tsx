@@ -1,6 +1,7 @@
 import { Chess, KING, type Color, type Move, type Square } from 'chess.js';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { useShallow } from 'zustand/react/shallow';
 import type { TChessBoard } from '../types/chess/TChessBoard';
 import type { TChessMove } from '../types/chess/TChessMove';
 import type { TChessMoveList } from '../types/chess/TChessMoveList';
@@ -13,13 +14,14 @@ import { parsePgn } from '../util/PgnUtil';
 let UNIQUE_MOVE_LIST_ID = 1;
 let UNIQUE_MOVE_ID = 1;
 
-const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
+export const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
     devtools((set, get) => ({
         chess: new Chess(),
 
         moveLists: {},
         moves: {},
 
+        firstMoveListId: undefined,
         board: undefined,
         selectedMoveId: undefined,
         scrolledMoveId: undefined,
@@ -53,7 +55,7 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
 
         reset: () => {
             get().chess.reset();
-            set((state) => ({ ...state, moveLists: {}, moves: {}, scrolledMoveId: undefined }));
+            set((state) => ({ moveLists: {}, moves: {}, firstMoveListId: undefined, scrolledMoveId: undefined }));
             get().updateChessBoard();
         },
 
@@ -61,12 +63,13 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
             const { moves } = parsePgn(pgn);
             get().reset();
             get().generateMoveList(get().chess, moves);
+            set((state) => ({ firstMoveListId: Object.values(state.moveLists)[0].moveListId }));
             get().updateChessBoard();
             get().selectMove(get().getFirstMoveList().lastMoveId);
         },
 
         updateChessBoard: () => {
-            set((state) => ({ ...state, board: get().chess.board() }));
+            set(() => ({ board: get().chess.board() }));
         },
 
         getFirstMoveList: () => {
@@ -139,7 +142,7 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
                 fromMoveId,
                 comment,
             };
-            set((state) => ({ ...state, moveLists: { ...state.moveLists, [moveList.moveListId]: moveList } }));
+            set((state) => ({ moveLists: { ...state.moveLists, [moveList.moveListId]: moveList } }));
             return moveList;
         },
 
@@ -156,13 +159,12 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
                     previousMove.nextMoveId = move.moveId;
                     moveList.lastMoveId = move.moveId;
                 }
-                return { ...state, moves: { ...state.moves, [move.moveId]: move }, moveLists: { ...state.moveLists, [moveListId]: moveList } };
+                return { moves: { ...state.moves, [move.moveId]: move }, moveLists: { ...state.moveLists, [moveListId]: moveList } };
             });
         },
 
         selectMove: (moveId?: TChessMoveId): void => {
-            set((state) => ({ ...state, selectedMoveId: moveId, scrolledMoveId: moveId }));
-
+            set(() => ({ selectedMoveId: moveId, scrolledMoveId: moveId }));
             if (!moveId) {
                 return;
             }
@@ -212,25 +214,25 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
         },
 
         setMoveListComment: (moveListId: TChessMoveListId, comment?: string): void => {
-            set((state) => ({ ...state, moveLists: { ...state.moveLists, [moveListId]: { ...state.moveLists[moveListId], comment } } }));
+            set((state) => ({ moveLists: { ...state.moveLists, [moveListId]: { ...state.moveLists[moveListId], comment } } }));
         },
 
         setMoveComment: (moveId: TChessMoveId, comment?: string): void => {
-            set((state) => ({ ...state, moves: { ...state.moves, [moveId]: { ...state.moves[moveId], comment } } }));
+            set((state) => ({ moves: { ...state.moves, [moveId]: { ...state.moves[moveId], comment } } }));
         },
 
         setScrolledMoveId: (moveId?: TChessMoveId): void => {
-            set((state) => ({ ...state, scrolledMoveId: moveId }));
+            set(() => ({ scrolledMoveId: moveId }));
         },
 
         selectPiece: (piece: TChessPiece): void => {
             const selectedPiece = !get().selectedPiece || get().selectedPiece?.square !== piece.square ? piece : undefined;
             const possibleMoves = selectedPiece ? get().chess.moves({ square: selectedPiece.square, verbose: true }) : [];
-            set((state) => ({ ...state, selectedPiece, possibleMoves }));
+            set(() => ({ selectedPiece, possibleMoves }));
         },
 
         deselectPiece: (): void => {
-            set((state) => ({ ...state, selectedPiece: undefined, possibleMoves: [] }));
+            set(() => ({ selectedPiece: undefined, possibleMoves: [] }));
         },
 
         movePiece: (move: Move): void => {
@@ -252,7 +254,7 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
                     nextMove.ravs = [];
                 }
                 nextMove.ravs = [...nextMove.ravs, parent.moveListId];
-                set((state) => ({ ...state, moves: { ...state.moves, [nextMove.moveId]: nextMove } }));
+                set((state) => ({ moves: { ...state.moves, [nextMove.moveId]: nextMove } }));
             }
 
             const generatedMove = get().generateMove(get().chess, move.san, parent.moveListId);
@@ -261,7 +263,7 @@ const useGameStoreV2 = create<TGameStoreV2, [['zustand/devtools', never]]>(
     })),
 );
 
-export default useGameStoreV2;
+export const useShallowGameStoreV2: <T>(selector: (state: TGameStoreV2) => T) => T = (selector) => useGameStoreV2(useShallow(selector));
 
 type TGameStoreV2 = {
     chess: Chess;
@@ -274,6 +276,7 @@ type TGameStoreV2 = {
     scrolledMoveId?: number;
     selectedPiece?: TChessPiece;
     possibleMoves: Move[];
+    firstMoveListId?: number;
 
     currentTurn: () => Color;
     boardPieces: () => TChessPiece[];

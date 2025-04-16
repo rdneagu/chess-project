@@ -4,9 +4,9 @@ import { Group, Menu } from '@mantine/core';
 import { mergeRefs } from '@mantine/hooks';
 import { getChessPieceClass } from '../../../../../../../../shared/util/ChessUtil';
 import { TReactWrapper } from '../../../../../../../../shared/types/react/TReactWrapper';
-import useGameStoreV2 from '../../../../../../../../shared/stores/gameStoreV2';
 import ChessMoveNag from './_components/ChessMoveNag/ChessMoveNag';
 import ChessMoveContextMenu from './_components/ChessMoveContextMenu/ChessMoveContextMenu';
+import { useShallowGameStoreV2 } from '@/shared/stores/gameStoreV2';
 import { TChessPiece } from '@/shared/types/chess/TChessPiece';
 import './ChessMove.css';
 import { CHESS_NAG_MAP } from '@/shared/types/chess/constants/Chess';
@@ -18,11 +18,11 @@ type ChessMoveProps = {
 } & Partial<TReactWrapper>;
 
 export default function ChessMove({ moveId, isContinuation, ref }: ChessMoveProps) {
-    const move = useGameStoreV2((state) => (moveId ? state.moves[moveId] : undefined));
-    const selectMove = useGameStoreV2((state) => state.selectMove);
-    const selectedMove = useGameStoreV2((state) => state.selectedMove());
-    const scrolledMoveId = useGameStoreV2((state) => state.scrolledMoveId);
-    const setScrolledMoveId = useGameStoreV2((state) => state.setScrolledMoveId);
+    const move = useShallowGameStoreV2((state) => (moveId ? state.moves[moveId] : undefined));
+    const selectMove = useShallowGameStoreV2((state) => state.selectMove);
+    const selectedMove = useShallowGameStoreV2((state) => state.selectedMove());
+    const scrolledMoveId = useShallowGameStoreV2((state) => state.scrolledMoveId);
+    const setScrolledMoveId = useShallowGameStoreV2((state) => state.setScrolledMoveId);
 
     const [contextMenuOpened, setContextMenuOpened] = useState(false);
     const moveRef = useRef<HTMLDivElement>(null);
